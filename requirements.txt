@@ -1,0 +1,6 @@
+flask
+twilio
+spacy
+scikit-learn
+fpdf2
+gunicorn
