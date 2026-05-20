@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-from ia.motor_decisao import MotorDecisao
+from ia.motor_decisao import MotorDecisaoJuridica as MotorDecisao
 from banco.banco_dados import salvar_caso
 
 app = Flask(__name__)
