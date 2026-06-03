@@ -137,7 +137,7 @@ def inserir_caso(id_caso, nome_cliente, email, whatsapp,
 
 
 def salvar_caso(protocolo, descricao, classificacao,
-                prioridade, acao_sugerida):
+                prioridade, acao_sugerida, whatsapp=''):
     """
     Função usada pela integração WhatsApp (integracao_whatsapp.py).
     Adapta os parâmetros e chama inserir_caso.
@@ -146,7 +146,7 @@ def salvar_caso(protocolo, descricao, classificacao,
         id_caso=protocolo,
         nome_cliente="Via WhatsApp",
         email="",
-        whatsapp="",
+        whatsapp=whatsapp,
         relato=descricao,
         tipo_caso=classificacao,
         prioridade=prioridade,

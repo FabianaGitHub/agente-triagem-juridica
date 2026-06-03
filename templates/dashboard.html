@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block titulo %}Casos Recebidos{% endblock %}
+{% block conteudo %}
+<div class="row g-0">
+
+  <!-- ── Sidebar de filtros ──────────────────────────────────────── -->
+  <div class="col-md-3 col-lg-2 sidebar p-3">
+    <p class="text-uppercase text-muted mb-3"
+       style="font-size:.7rem; letter-spacing:.06em; font-weight:600;">Filtros</p>
+
+    <p class="fw-bold mb-2" style="font-size:.82rem;">Área Jurídica</p>
+    <a href="/advogados" class="filtro-link {% if not area_filtro %}ativo{% endif %}">
+      Todas as áreas
+    </a>
+    {% for area in areas %}
+    <a href="/advogados?area={{ area|urlencode }}"
+       class="filtro-link {% if area_filtro == area %}ativo{% endif %}">
+      {{ area }}
+    </a>
+    {% endfor %}
+
+    <hr class="my-3">
+
+    <p class="fw-bold mb-2" style="font-size:.82rem;">Prioridade</p>
+    <a href="/advogados{% if area_filtro %}?area={{ area_filtro|urlencode }}{% endif %}"
+       class="filtro-link {% if not prio_filtro %}ativo{% endif %}">
+      Todas
+    </a>
+    {% for p, label in [('Prioridade 1','Alta'),('Prioridade 2','Média'),('Prioridade 3','Normal')] %}
+    <a href="/advogados?prioridade={{ p|urlencode }}{% if area_filtro %}&area={{ area_filtro|urlencode }}{% endif %}"
+       class="filtro-link {% if prio_filtro == p %}ativo{% endif %}">
+      {{ p }} — {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- ── Lista de casos ──────────────────────────────────────────── -->
+  <div class="col-md-9 col-lg-10 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="fw-bold mb-0" style="color:#1a3c5e;">CASOS RECEBIDOS</h5>
+      <span class="badge bg-secondary rounded-pill">{{ casos|length }} caso(s)</span>
+    </div>
+
+    {% if casos %}
+      {% for c in casos %}
+      <div class="card card-caso border mb-3 shadow-sm">
+        <div class="card-body py-3 px-4">
+
+          <!-- Linha superior: badges + data -->
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <span class="badge bg-{{ c.cor }} me-1">{{ c.tipo }}</span>
+              {% if c.prioridade and c.prioridade[-1].isdigit() %}
+              <span class="badge badge-p{{ c.prioridade[-1] }}">{{ c.prioridade }}</span>
+              {% endif %}
+            </div>
+            <small class="text-muted">{{ c.data_fmt }}</small>
+          </div>
+
+          <!-- Protocolo + WhatsApp -->
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <strong style="color:#1a3c5e;">Protocolo {{ c.id }}</strong>
+            {% if c.whatsapp %}
+            <small class="text-muted">
+              <i class="bi bi-whatsapp text-success"></i> {{ c.whatsapp }}
+            </small>
+            {% endif %}
+          </div>
+
+          <!-- Resumo -->
+          <p class="text-muted small mb-3" style="line-height:1.6;">
+            {{ c.resumo }}{% if c.resumo|length >= 220 %}…{% endif %}
+          </p>
+
+          <!-- Botões -->
+          <div class="d-flex gap-2">
+            <a href="/advogados/caso/{{ c.id }}"
+               class="btn btn-sm text-white" style="background-color:#1a3c5e;">
+              <i class="bi bi-eye me-1"></i>Ver detalhes
+            </a>
+            <a href="/advogados/pdf/{{ c.id }}"
+               class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-file-earmark-pdf me-1"></i>Baixar PDF
+            </a>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox d-block mb-2" style="font-size:2.5rem;"></i>
+        Nenhum caso encontrado com estes filtros.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

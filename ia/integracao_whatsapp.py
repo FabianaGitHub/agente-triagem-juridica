@@ -1,6 +1,9 @@
 import os
-from datetime import date
-from flask import Flask, request
+from datetime import date, datetime
+from functools import wraps
+from urllib.parse import quote_plus
+from flask import (Flask, request, session, redirect,
+                   url_for, render_template, send_file)
 from twilio.twiml.messaging_response import MessagingResponse
 from ia.motor_decisao import MotorDecisaoJuridica as MotorDecisao
 from ia.base_conhecimento import (
@@ -8,9 +11,14 @@ from ia.base_conhecimento import (
 )
 from banco.banco_dados import salvar_caso, criar_banco, gerar_id_sequencial
 
-app = Flask(__name__)
+_TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates')
+app = Flask(__name__, template_folder=_TEMPLATE_DIR)
+app.secret_key = os.environ.get('SECRET_KEY', 'acessus-juridico-2026')
+
 motor = MotorDecisao()
 criar_banco()
+
+ADVOGADOS_SENHA = os.environ.get('ADVOGADOS_SENHA', 'acessus2026')
 
 # ── Memória de sessões ──────────────────────────────────────────────────────
 # sessoes[numero] = {
@@ -28,7 +36,7 @@ consentidos = set()
 # historico[numero][data][area] = quantidade de perguntas
 historico = {}
 
-# ── Constantes ──────────────────────────────────────────────────────────────
+# ── Constantes WhatsApp ──────────────────────────────────────────────────────
 LIMITE_AVISO    = 2
 LIMITE_BLOQUEIO = 3
 
@@ -69,8 +77,36 @@ TERMO_CONSENTIMENTO = (
     "_Responda com 1 ou 2._"
 )
 
+# Cores Bootstrap por área (usadas nos templates)
+_COR_AREA = {
+    'Direito do Consumidor': 'primary',
+    'Direito Trabalhista':   'warning',
+    'Direito de Família':    'purple',
+    'Direito Bancário':      'success',
+    'Previdência Social':    'info',
+    'Indefinida':            'secondary',
+}
 
-# ── Funções de controle de histórico ────────────────────────────────────────
+
+# ── Filtro Jinja2 ─────────────────────────────────────────────────────────────
+
+@app.template_filter('urlencode')
+def _urlencode_filter(s):
+    return quote_plus(str(s))
+
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+
+def requer_login(f):
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        if not session.get('logado'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return wrapped
+
+
+# ── Funções de controle de histórico ─────────────────────────────────────────
 
 def registrar_pergunta(numero, area):
     hoje = str(date.today())
@@ -91,7 +127,7 @@ def total_perguntas_hoje(numero):
     return sum(historico[numero][hoje].values())
 
 
-# ── Processamento do consentimento ──────────────────────────────────────────
+# ── Processamento do consentimento ────────────────────────────────────────────
 
 def processar_consentimento(mensagem, numero):
     escolha = mensagem.strip()
@@ -122,7 +158,7 @@ def processar_consentimento(mensagem, numero):
         )
 
 
-# ── Webhook principal ────────────────────────────────────────────────────────
+# ── Webhook WhatsApp ──────────────────────────────────────────────────────────
 
 @app.route("/whatsapp", methods=['POST'])
 def whatsapp_webhook():
@@ -149,7 +185,7 @@ def whatsapp_webhook():
     return str(resp)
 
 
-# ── Processamento do relato ──────────────────────────────────────────────────
+# ── Processamento do relato ───────────────────────────────────────────────────
 
 def processar_relato(mensagem, numero):
     total = total_perguntas_hoje(numero)
@@ -180,7 +216,7 @@ def processar_relato(mensagem, numero):
 
     vezes = registrar_pergunta(numero, area)
 
-    # 2ª pergunta sobre o mesmo tema — resposta reduzida, sem novo questionário
+    # 2ª pergunta sobre o mesmo tema — resposta reduzida
     if vezes == LIMITE_AVISO:
         protocolo = gerar_id_sequencial()
         salvar_caso(
@@ -188,7 +224,8 @@ def processar_relato(mensagem, numero):
             descricao=mensagem,
             classificacao=area,
             prioridade=f"Prioridade {prioridade}",
-            acao_sugerida="Repetição de consulta"
+            acao_sugerida="Repetição de consulta",
+            whatsapp=numero
         )
         opcoes_texto, opcoes_lista = obter_opcoes(area, sub_area, {})
         sessoes[numero] = {
@@ -212,7 +249,7 @@ def processar_relato(mensagem, numero):
     return iniciar_questionario(area, sub_area, mensagem, numero, prioridade)
 
 
-# ── Questionário ─────────────────────────────────────────────────────────────
+# ── Questionário ──────────────────────────────────────────────────────────────
 
 def iniciar_questionario(area, sub_area, relato, numero, prioridade):
     perguntas = obter_perguntas(area, sub_area)
@@ -231,8 +268,6 @@ def iniciar_questionario(area, sub_area, relato, numero, prioridade):
     if not perguntas:
         return finalizar_questionario(numero, sessoes[numero])
 
-    primeira_pergunta = perguntas[0]["texto"]
-
     if area == "Indefinida":
         return (
             "Recebi seu relato, mas não consegui identificar com clareza "
@@ -244,7 +279,7 @@ def iniciar_questionario(area, sub_area, relato, numero, prioridade):
         f"Entendo, seu caso envolve *{area}*.\n\n"
         "Para te orientar da melhor forma, preciso entender um pouco "
         "mais sobre o que aconteceu.\n\n"
-        f"{primeira_pergunta}"
+        f"{perguntas[0]['texto']}"
     )
 
 
@@ -299,7 +334,8 @@ def finalizar_questionario(numero, sessao, urgente=False):
         descricao=resumo_db,
         classificacao=area,
         prioridade=f"Prioridade {prioridade}",
-        acao_sugerida=""
+        acao_sugerida="",
+        whatsapp=numero
     )
 
     if urgente:
@@ -341,7 +377,7 @@ def _gerar_resumo_db(relato, area, sub_area, respostas):
     return "\n".join(linhas)
 
 
-# ── Opções por área ──────────────────────────────────────────────────────────
+# ── Opções por área ───────────────────────────────────────────────────────────
 
 def obter_opcoes(area, sub_area, respostas):
     """Retorna (texto_das_opcoes, lista_de_chaves_de_opcao)."""
@@ -406,7 +442,6 @@ def obter_opcoes(area, sub_area, respostas):
     if area == "Indefinida":
         return _opcoes_indefinida(), ["advogado", "procon", "cejusc", "jec"]
 
-    # Consumidor geral, Bancário e demais
     cidade = respostas.get("cidade", "").strip()
     procon_label = f"Informações do Procon de {cidade.title()}" if cidade else "Informações do Procon"
     return (
@@ -433,7 +468,7 @@ def _opcoes_indefinida():
     )
 
 
-# ── Processamento da escolha ─────────────────────────────────────────────────
+# ── Processamento da escolha ──────────────────────────────────────────────────
 
 def processar_escolha(mensagem, numero, sessao):
     protocolo = sessao.get("protocolo", "")
@@ -454,13 +489,13 @@ def processar_escolha(mensagem, numero, sessao):
 
     sessoes.pop(numero, None)
 
-    cidade       = respostas.get("cidade", "").strip()
+    cidade        = respostas.get("cidade", "").strip()
     protocolo_txt = f"\n\n*Protocolo do seu caso:* {protocolo}" if protocolo else ""
 
     if opcao in ("advogado", "advogado_urgente"):
-        prefixo   = "⚠️ *Caso urgente encaminhado.*\n\n" if opcao == "advogado_urgente" else "✅ *Caso encaminhado para advogado parceiro.*\n\n"
-        area_txt  = f"*Área:* {area}\n\n" if area else ""
-        prot_txt  = f"*Protocolo:* {protocolo}\n\n" if protocolo else ""
+        prefixo  = "⚠️ *Caso urgente encaminhado.*\n\n" if opcao == "advogado_urgente" else "✅ *Caso encaminhado para advogado parceiro.*\n\n"
+        area_txt = f"*Área:* {area}\n\n" if area else ""
+        prot_txt = f"*Protocolo:* {protocolo}\n\n" if protocolo else ""
         return (
             prefixo + prot_txt + area_txt +
             "Um advogado receberá seu caso e entrará em contato em breve.\n\n"
@@ -496,6 +531,135 @@ def processar_escolha(mensagem, numero, sessao):
         )
 
     return "Opção não reconhecida. Por favor, tente novamente." + DISCLAIMER
+
+
+# ── Painel do Advogado ────────────────────────────────────────────────────────
+
+def _extrair_resumo(relato, max_chars=220):
+    if not relato:
+        return ''
+    if 'RELATO:' in relato:
+        for linha in relato.split('\n'):
+            if linha.strip().startswith('RELATO:'):
+                return linha.replace('RELATO:', '').strip()[:max_chars]
+    return relato[:max_chars]
+
+
+def _formatar_data_web(data_cadastro):
+    try:
+        return datetime.fromisoformat(str(data_cadastro)[:19]).strftime('%d/%m/%Y %H:%M')
+    except Exception:
+        return str(data_cadastro)[:16]
+
+
+@app.route('/advogados/login', methods=['GET', 'POST'])
+def login():
+    erro = None
+    if request.method == 'POST':
+        if request.form.get('senha') == ADVOGADOS_SENHA:
+            session['logado'] = True
+            return redirect(url_for('dashboard'))
+        erro = 'Senha incorreta.'
+    return render_template('login.html', erro=erro)
+
+
+@app.route('/advogados/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+
+@app.route('/advogados')
+@requer_login
+def dashboard():
+    from banco.banco_dados import listar_casos
+
+    area_filtro = request.args.get('area', '')
+    prio_filtro = request.args.get('prioridade', '')
+
+    todos = listar_casos()
+    areas = sorted({c[5] for c in todos if c[5]})
+
+    casos = []
+    for c in todos:
+        id_caso, nome, email, whatsapp, relato, tipo, prio, anexos, data_cad = c
+        if area_filtro and tipo != area_filtro:
+            continue
+        if prio_filtro and prio != prio_filtro:
+            continue
+        casos.append({
+            'id':         id_caso,
+            'whatsapp':   whatsapp or '',
+            'tipo':       tipo or 'Indefinida',
+            'prioridade': prio or '—',
+            'data_fmt':   _formatar_data_web(data_cad),
+            'resumo':     _extrair_resumo(relato),
+            'cor':        _COR_AREA.get(tipo, 'secondary'),
+        })
+
+    return render_template('dashboard.html',
+                           casos=casos,
+                           areas=areas,
+                           area_filtro=area_filtro,
+                           prio_filtro=prio_filtro)
+
+
+@app.route('/advogados/caso/<caso_id>')
+@requer_login
+def ver_caso(caso_id):
+    from banco.banco_dados import buscar_caso_por_id
+
+    dados = buscar_caso_por_id(caso_id)
+    if not dados:
+        return 'Caso não encontrado.', 404
+
+    id_caso, nome, email, whatsapp, relato, tipo, prio, anexos, data_cad = dados
+
+    campos = []
+    if relato and 'RELATO:' in relato:
+        for linha in relato.split('\n'):
+            linha = linha.strip()
+            if not linha or linha == '---':
+                continue
+            if ':' in linha:
+                chave, _, valor = linha.partition(':')
+                campos.append((chave.strip().title().replace('_', ' '), valor.strip()))
+    else:
+        campos = [('Relato', relato or '')]
+
+    caso = {
+        'id':         id_caso,
+        'nome':       nome or '—',
+        'email':      email or '',
+        'whatsapp':   whatsapp or '',
+        'tipo':       tipo or 'Indefinida',
+        'prioridade': prio or '—',
+        'data_fmt':   _formatar_data_web(data_cad),
+        'campos':     campos,
+        'anexos':     [a.strip() for a in (anexos or '').split(',') if a.strip()],
+        'cor':        _COR_AREA.get(tipo, 'secondary'),
+    }
+
+    return render_template('caso.html', caso=caso)
+
+
+@app.route('/advogados/pdf/<caso_id>')
+@requer_login
+def baixar_pdf(caso_id):
+    from banco.banco_dados import buscar_caso_por_id
+    from relatorios.gerador_pdf import gerar_pdf_caso
+
+    dados = buscar_caso_por_id(caso_id)
+    if not dados:
+        return 'Caso não encontrado.', 404
+
+    caminho = gerar_pdf_caso(dados)
+    return send_file(
+        caminho,
+        as_attachment=True,
+        download_name=f'caso_{caso_id}.pdf',
+        mimetype='application/pdf'
+    )
 
 
 # ── Rota de verificação ───────────────────────────────────────────────────────

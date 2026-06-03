@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block titulo %}Caso {{ caso.id }}{% endblock %}
+{% block conteudo %}
+<div class="container py-4" style="max-width:860px;">
+
+  <a href="/advogados" class="btn btn-sm btn-outline-secondary mb-4">
+    <i class="bi bi-arrow-left me-1"></i>Voltar para lista
+  </a>
+
+  <!-- Cabeçalho -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header py-3" style="background-color:#1a3c5e;">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="text-white fw-bold mb-0">Protocolo {{ caso.id }}</h5>
+        <span class="badge bg-{{ caso.cor }} fs-6">{{ caso.tipo }}</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-sm-4">
+          <small class="text-muted d-block mb-1">Prioridade</small>
+          {% if caso.prioridade and caso.prioridade[-1].isdigit() %}
+          <span class="badge badge-p{{ caso.prioridade[-1] }}" style="font-size:.85rem;">
+            {{ caso.prioridade }}
+          </span>
+          {% else %}
+          <strong>{{ caso.prioridade }}</strong>
+          {% endif %}
+        </div>
+        <div class="col-sm-4">
+          <small class="text-muted d-block mb-1">Data de cadastro</small>
+          <strong>{{ caso.data_fmt }}</strong>
+        </div>
+        <div class="col-sm-4">
+          <small class="text-muted d-block mb-1">Área jurídica</small>
+          <strong>{{ caso.tipo }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contato -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header py-2 secao-header">
+      <h6 class="mb-0"><i class="bi bi-person me-1"></i>Dados do Solicitante</h6>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-sm-4">
+          <small class="text-muted d-block">Nome</small>
+          <span>{{ caso.nome }}</span>
+        </div>
+        {% if caso.email %}
+        <div class="col-sm-4">
+          <small class="text-muted d-block">E-mail</small>
+          <a href="mailto:{{ caso.email }}">{{ caso.email }}</a>
+        </div>
+        {% endif %}
+        {% if caso.whatsapp %}
+        <div class="col-sm-4">
+          <small class="text-muted d-block">WhatsApp</small>
+          <span><i class="bi bi-whatsapp text-success"></i> {{ caso.whatsapp }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Relato -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header py-2 secao-header">
+      <h6 class="mb-0"><i class="bi bi-chat-text me-1"></i>Relato e Informações do Caso</h6>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-striped mb-0 align-middle">
+        <tbody>
+          {% for label, valor in caso.campos %}
+          <tr>
+            <td class="text-muted fw-semibold small ps-3 py-2"
+                style="width:210px; white-space:nowrap;">{{ label }}</td>
+            <td class="small pe-3 py-2">{{ valor }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Anexos -->
+  {% if caso.anexos %}
+  <div class="card shadow-sm mb-4">
+    <div class="card-header py-2 secao-header">
+      <h6 class="mb-0"><i class="bi bi-paperclip me-1"></i>Anexos</h6>
+    </div>
+    <div class="card-body">
+      {% for arq in caso.anexos %}
+      <div class="small py-1">
+        <i class="bi bi-file-earmark me-1 text-muted"></i>{{ arq }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Ações -->
+  <div class="d-flex gap-3">
+    <a href="/advogados/pdf/{{ caso.id }}"
+       class="btn text-white fw-bold" style="background-color:#1a3c5e;">
+      <i class="bi bi-file-earmark-pdf me-1"></i>Baixar PDF
+    </a>
+    <a href="/advogados" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Voltar para lista
+    </a>
+  </div>
+
+</div>
+{% endblock %}
