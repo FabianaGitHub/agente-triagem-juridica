@@ -14,6 +14,8 @@ from banco.banco_dados import salvar_caso, criar_banco, gerar_id_sequencial
 _TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates')
 app = Flask(__name__, template_folder=_TEMPLATE_DIR)
 app.secret_key = os.environ.get('SECRET_KEY', 'acessus-juridico-2026')
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE']   = os.environ.get('DATABASE_URL') is not None  # True só no Render (HTTPS)
 
 motor = MotorDecisao()
 criar_banco()
@@ -556,7 +558,7 @@ def _formatar_data_web(data_cadastro):
 def login():
     erro = None
     if request.method == 'POST':
-        if request.form.get('senha') == ADVOGADOS_SENHA:
+        if request.form.get('senha', '').strip() == ADVOGADOS_SENHA.strip():
             session['logado'] = True
             return redirect(url_for('dashboard'))
         erro = 'Senha incorreta.'
