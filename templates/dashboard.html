@@ -5,8 +5,7 @@
 
   <!-- ── Sidebar de filtros ──────────────────────────────────────── -->
   <div class="col-md-3 col-lg-2 sidebar p-3">
-    <p class="text-uppercase text-muted mb-3"
-       style="font-size:.7rem; letter-spacing:.06em; font-weight:600;">Menu</p>
+    <div class="secao-header">Menu</div>
     <a href="/advogados" class="filtro-link ativo mb-1">
       <i class="bi bi-folder2-open me-1"></i>Casos
     </a>
@@ -17,11 +16,9 @@
       <i class="bi bi-person-plus me-1"></i>Cadastrar advogado
     </a>
 
-    <hr class="my-3">
-    <p class="text-uppercase text-muted mb-2"
-       style="font-size:.7rem; letter-spacing:.06em; font-weight:600;">Filtros</p>
+    <div class="secao-header mt-3">Filtros</div>
 
-    <p class="fw-bold mb-2" style="font-size:.82rem;">Área Jurídica</p>
+    <div class="secao-header mt-2">Área Jurídica</div>
     <a href="/advogados" class="filtro-link {% if not area_filtro %}ativo{% endif %}">
       Todas as áreas
     </a>
@@ -32,9 +29,7 @@
     </a>
     {% endfor %}
 
-    <hr class="my-3">
-
-    <p class="fw-bold mb-2" style="font-size:.82rem;">Prioridade</p>
+    <div class="secao-header mt-2">Prioridade</div>
     <a href="/advogados{% if area_filtro %}?area={{ area_filtro|urlencode }}{% endif %}"
        class="filtro-link {% if not prio_filtro %}ativo{% endif %}">
       Todas
@@ -49,9 +44,10 @@
 
   <!-- ── Lista de casos ──────────────────────────────────────────── -->
   <div class="col-md-9 col-lg-10 p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5 class="fw-bold mb-0" style="color:#1a3c5e;">CASOS RECEBIDOS</h5>
-      <span class="badge bg-secondary rounded-pill">{{ casos|length }} caso(s)</span>
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3 py-2 rounded"
+         style="background: linear-gradient(90deg, #000000 0%, #0d2855 100%);">
+      <h5 class="fw-bold mb-0 text-white" style="font-size:.95rem; letter-spacing:.04em;">CASOS RECEBIDOS</h5>
+      <span class="badge bg-light text-dark rounded-pill">{{ casos|length }} caso(s)</span>
     </div>
 
     {% if casos %}
