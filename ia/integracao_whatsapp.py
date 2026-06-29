@@ -301,7 +301,9 @@ def processar_resposta_pergunta(mensagem, numero, sessao):
         sessoes[numero] = sessao
         return "Por favor, me informe o nome da sua cidade para continuar."
 
-    respostas[chave] = resposta_limpa
+    # Converte número da opção para o texto legível (ex: "2" → "Não")
+    opcoes = pergunta_atual.get("opcoes", {})
+    respostas[chave] = opcoes.get(resposta_limpa, resposta_limpa)
 
     if especial == "risco_vida":
         r = mensagem.strip().lower()

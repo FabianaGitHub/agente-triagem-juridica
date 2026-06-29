@@ -82,7 +82,8 @@ PERGUNTAS = {
                 "2️⃣ Não\n\n"
                 "_Responda com 1 ou 2._"
             ),
-            "especial": "risco_vida"
+            "especial": "risco_vida",
+            "opcoes": {"1": "Sim", "2": "Não"}
         },
         {
             "chave": "negativa_escrita",
@@ -119,7 +120,8 @@ PERGUNTAS = {
                 "1️⃣ Sim\n"
                 "2️⃣ Não\n\n"
                 "_Responda com 1 ou 2._"
-            )
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
         },
         {
             "chave": "ultimo_dia",
@@ -142,7 +144,8 @@ PERGUNTAS = {
                 "1️⃣ Sim\n"
                 "2️⃣ Não\n\n"
                 "_Responda com 1 ou 2._"
-            )
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
         },
         {
             "chave": "acordo_existente",
@@ -180,7 +183,8 @@ PERGUNTAS = {
                 "2️⃣ Ainda não\n\n"
                 "_Responda com 1 ou 2._"
             ),
-            "especial": "foi_inss"
+            "especial": "foi_inss",
+            "opcoes": {"1": "Sim, já fui / já liguei", "2": "Ainda não"}
         },
         {
             "chave": "situacao_inss",
