@@ -48,6 +48,12 @@
             <td>
               {% if adv.oab_numero %}
                 {{ adv.oab_numero }}/{{ adv.oab_uf }}
+                <a href="https://cfoab.org.br/advogados/busca?nome=&inscricao={{ adv.oab_numero }}&uf={{ adv.oab_uf }}"
+                   target="_blank" rel="noopener"
+                   class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1"
+                   title="Verificar no site da OAB">
+                  <i class="bi bi-box-arrow-up-right" style="font-size:.75rem;"></i>
+                </a>
               {% else %}
                 <span class="text-muted">—</span>
               {% endif %}
