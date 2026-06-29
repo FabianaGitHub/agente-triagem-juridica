@@ -205,6 +205,13 @@ def whatsapp_webhook():
         if estado != "novo":
             _set_sessao(numero, sessao)
 
+    # Comando de reset para testes — remover antes de produção real
+    if mensagem.strip().upper() == "REINICIAR":
+        _del_sessao(numero)
+        revogar_consentimento(numero)
+        resp.message("🔄 Sessão reiniciada. Pode começar uma nova conversa!")
+        return str(resp)
+
     if estado == "aguardando_consentimento":
         resposta = processar_consentimento(mensagem, numero, sessao)
     elif estado == "fazendo_perguntas":
