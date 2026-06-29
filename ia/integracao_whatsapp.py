@@ -79,26 +79,29 @@ DISCLAIMER = (
     "documento ou prova em qualquer processo._"
 )
 
-TERMO_CONSENTIMENTO = (
-    "Olá! Antes de começar, preciso do seu consentimento sobre como "
-    "seus dados serão usados.\n\n"
-    "📋 *Termo de Consentimento — Agente Jurídico*\n\n"
-    "Ao utilizar este serviço, você autoriza:\n\n"
-    "✅ A coleta do seu número de WhatsApp e das mensagens enviadas\n"
-    "✅ O uso dessas informações para orientação jurídica e registro do seu caso\n"
-    "✅ O compartilhamento com advogados parceiros *somente* se você "
-    "solicitar encaminhamento\n\n"
-    "🔒 *Seus dados são protegidos pela Lei Geral de Proteção de Dados "
-    "(LGPD — Lei 13.709/2018)*\n\n"
-    "Este serviço é *gratuito* e fornece *informações jurídicas gerais*. "
-    "Não substitui atendimento com advogado.\n\n"
-    "Você pode parar de usar o serviço a qualquer momento.\n\n"
-    "---\n"
-    "*Você concorda com os termos acima?*\n\n"
-    "1️⃣ Sim, concordo — quero continuar\n"
-    "2️⃣ Não concordo — quero sair\n\n"
-    "_Responda com 1 ou 2._"
-)
+def _montar_termo(nome_whatsapp=''):
+    saudacao = f"Olá, *{nome_whatsapp}*! 👋\n\n" if nome_whatsapp else "Olá! 👋\n\n"
+    return (
+        saudacao +
+        "Antes de começar, preciso do seu consentimento sobre como "
+        "seus dados serão usados.\n\n"
+        "📋 *Termo de Consentimento — Agente Jurídico*\n\n"
+        "Ao utilizar este serviço, você autoriza:\n\n"
+        "✅ A coleta do seu número de WhatsApp e das mensagens enviadas\n"
+        "✅ O uso dessas informações para orientação jurídica e registro do seu caso\n"
+        "✅ O compartilhamento com advogados parceiros *somente* se você "
+        "solicitar encaminhamento\n\n"
+        "🔒 *Seus dados são protegidos pela Lei Geral de Proteção de Dados "
+        "(LGPD — Lei 13.709/2018)*\n\n"
+        "Este serviço é *gratuito* e fornece *informações jurídicas gerais*. "
+        "Não substitui atendimento com advogado.\n\n"
+        "Você pode parar de usar o serviço a qualquer momento.\n\n"
+        "---\n"
+        "*Você concorda com os termos acima?*\n\n"
+        "1️⃣ Sim, concordo — quero continuar\n"
+        "2️⃣ Não concordo — quero sair\n\n"
+        "_Responda com 1 ou 2._"
+    )
 
 # Cores Bootstrap por área (usadas nos templates)
 _COR_AREA = {
@@ -152,16 +155,18 @@ def total_perguntas_hoje(numero):
 
 # ── Processamento do consentimento ────────────────────────────────────────────
 
-def processar_consentimento(mensagem, numero):
-    escolha = mensagem.strip()
+def processar_consentimento(mensagem, numero, sessao):
+    escolha    = mensagem.strip()
+    nome_wa    = sessao.get('nome_whatsapp', '')
+    nome_txt   = f", *{nome_wa}*" if nome_wa else ""
 
     if escolha == "1":
         registrar_consentimento(numero)
         _del_sessao(numero)
         return (
-            "✅ Consentimento registrado. Obrigado!\n\n"
-            "Agora pode me descrever sua situação jurídica com o máximo "
-            "de detalhes que puder. Estou aqui para orientar você."
+            f"✅ Consentimento registrado. Obrigado{nome_txt}!\n\n"
+            "Agora pode me descrever sua situação jurídica. "
+            "Estou aqui para orientar você."
         )
 
     elif escolha == "2":
@@ -186,15 +191,22 @@ def processar_consentimento(mensagem, numero):
 
 @app.route("/whatsapp", methods=['POST'])
 def whatsapp_webhook():
-    mensagem = request.values.get('Body', '').strip()
-    numero   = request.values.get('From', '')
+    mensagem   = request.values.get('Body', '').strip()
+    numero     = request.values.get('From', '')
+    nome_wa    = request.values.get('ProfileName', '').strip()
 
     resp   = MessagingResponse()
     sessao = _get_sessao(numero)
     estado = sessao.get("estado", "novo")
 
+    # Atualiza nome do WhatsApp na sessão se disponível
+    if nome_wa and sessao.get('nome_whatsapp') != nome_wa:
+        sessao['nome_whatsapp'] = nome_wa
+        if estado != "novo":
+            _set_sessao(numero, sessao)
+
     if estado == "aguardando_consentimento":
-        resposta = processar_consentimento(mensagem, numero)
+        resposta = processar_consentimento(mensagem, numero, sessao)
     elif estado == "fazendo_perguntas":
         resposta = processar_resposta_pergunta(mensagem, numero, sessao)
     elif estado == "aguardando_escolha":
@@ -202,8 +214,11 @@ def whatsapp_webhook():
     elif verificar_consentimento(numero):
         resposta = processar_relato(mensagem, numero)
     else:
-        _set_sessao(numero, {"estado": "aguardando_consentimento"})
-        resposta = TERMO_CONSENTIMENTO
+        sessao_nova = {"estado": "aguardando_consentimento"}
+        if nome_wa:
+            sessao_nova['nome_whatsapp'] = nome_wa
+        _set_sessao(numero, sessao_nova)
+        resposta = _montar_termo(nome_wa)
 
     resp.message(resposta)
     return str(resp)
@@ -276,8 +291,16 @@ def processar_relato(mensagem, numero):
 # ── Questionário ──────────────────────────────────────────────────────────────
 
 def iniciar_questionario(area, sub_area, relato, numero, prioridade):
-    perguntas = obter_perguntas(area, sub_area)
+    perguntas_area = obter_perguntas(area, sub_area)
 
+    # Sempre pergunta o nome completo primeiro
+    pergunta_nome = {
+        "chave": "nome_completo",
+        "texto": "Para registrar seu caso, preciso do seu *nome completo*."
+    }
+    perguntas = [pergunta_nome] + perguntas_area
+
+    sessao_atual = _get_sessao(numero)
     sessao_nova = {
         "estado": "fazendo_perguntas",
         "area": area,
@@ -286,7 +309,8 @@ def iniciar_questionario(area, sub_area, relato, numero, prioridade):
         "perguntas": perguntas,
         "indice_atual": 0,
         "respostas": {},
-        "prioridade": prioridade
+        "prioridade": prioridade,
+        "nome_whatsapp": sessao_atual.get('nome_whatsapp', '')
     }
     _set_sessao(numero, sessao_nova)
 
@@ -360,8 +384,9 @@ def finalizar_questionario(numero, sessao, urgente=False):
     respostas  = sessao.get("respostas", {})
     prioridade = sessao.get("prioridade", 3)
 
-    protocolo = gerar_id_sequencial()
-    resumo_db = _gerar_resumo_db(relato, area, sub_area, respostas)
+    protocolo     = gerar_id_sequencial()
+    nome_completo = respostas.get('nome_completo', sessao.get('nome_whatsapp', 'Via WhatsApp'))
+    resumo_db     = _gerar_resumo_db(relato, area, sub_area, respostas)
 
     salvar_caso(
         protocolo=protocolo,
@@ -369,7 +394,8 @@ def finalizar_questionario(numero, sessao, urgente=False):
         classificacao=area,
         prioridade=f"Prioridade {prioridade}",
         acao_sugerida="",
-        whatsapp=numero
+        whatsapp=numero,
+        nome_cliente=nome_completo
     )
 
     if urgente:
