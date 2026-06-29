@@ -294,7 +294,14 @@ def processar_resposta_pergunta(mensagem, numero, sessao):
     chave          = pergunta_atual["chave"]
     especial       = pergunta_atual.get("especial")
 
-    respostas[chave] = mensagem.strip()
+    _SAUDACOES = {"olá", "ola", "oi", "bom dia", "boa tarde", "boa noite", "hey", "hi", "hello"}
+    resposta_limpa = mensagem.strip()
+
+    if chave == "cidade" and resposta_limpa.lower() in _SAUDACOES:
+        sessoes[numero] = sessao
+        return "Por favor, me informe o nome da sua cidade para continuar."
+
+    respostas[chave] = resposta_limpa
 
     if especial == "risco_vida":
         r = mensagem.strip().lower()

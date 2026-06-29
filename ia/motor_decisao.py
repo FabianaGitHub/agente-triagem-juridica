@@ -59,7 +59,12 @@ class MotorDecisaoJuridica:
             "familia": {
                 "palavras": ["divórcio", "divorcio", "separação", "separacao", "guarda",
                              "pensão alimentícia", "pensao alimenticia", "alimentos",
-                             "herança", "heranca", "inventário", "inventario"],
+                             "herança", "heranca", "inventário", "inventario",
+                             "falecido", "falecida", "faleceu", "espólio", "espolio",
+                             "avô", "avó", "avo", "ava", "pai faleceu", "mãe faleceu",
+                             "imóvel", "imovel", "terreno", "escritura", "partilha",
+                             "sucessão", "sucessao", "testamento", "viúvo", "viuvo",
+                             "viúva", "viuva", "cônjuge", "conjuge"],
                 "prioridade": 2,
                 "area": "Direito de Família",
                 "sub_area": "familia",
@@ -79,25 +84,33 @@ class MotorDecisaoJuridica:
     def analisar(self, relato):
         texto = relato.lower()
 
-        resultado = {
-            "tipo": "nao_identificado",
-            "prioridade": 3,
-            "area": "Indefinida",
-            "sub_area": "indefinida",
-            "acao_sugerida": "Não foi possível identificar a área jurídica."
-        }
+        melhor_tipo   = None
+        melhor_regra  = None
+        melhor_contagem = 0
 
         for tipo, regra in self.regras.items():
-            for palavra in regra["palavras"]:
-                if palavra in texto:
-                    resultado["tipo"]          = tipo
-                    resultado["prioridade"]    = regra["prioridade"]
-                    resultado["area"]          = regra["area"]
-                    resultado["sub_area"]      = regra["sub_area"]
-                    resultado["acao_sugerida"] = regra["acao_sugerida"]
-                    return resultado
+            contagem = sum(1 for p in regra["palavras"] if p in texto)
+            if contagem > melhor_contagem:
+                melhor_contagem = contagem
+                melhor_tipo     = tipo
+                melhor_regra    = regra
 
-        return resultado
+        if melhor_regra:
+            return {
+                "tipo":          melhor_tipo,
+                "prioridade":    melhor_regra["prioridade"],
+                "area":          melhor_regra["area"],
+                "sub_area":      melhor_regra["sub_area"],
+                "acao_sugerida": melhor_regra["acao_sugerida"]
+            }
+
+        return {
+            "tipo":          "nao_identificado",
+            "prioridade":    3,
+            "area":          "Indefinida",
+            "sub_area":      "indefinida",
+            "acao_sugerida": "Não foi possível identificar a área jurídica."
+        }
 
 
 agente_decisao = MotorDecisaoJuridica()
