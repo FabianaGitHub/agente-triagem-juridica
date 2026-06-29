@@ -1,8 +1,18 @@
 {% extends "base.html" %}
 {% block titulo %}Acesso{% endblock %}
 {% block conteudo %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 57px);">
-  <div class="card shadow" style="width:380px;">
+<div class="position-relative d-flex justify-content-center align-items-center"
+     style="min-height: calc(100vh - 60px); overflow: hidden;">
+
+  <!-- Logo como marca d'água no fundo -->
+  <img src="/static/img/Logo Acessus.png" alt=""
+       class="position-absolute"
+       style="width: 65%; max-width: 520px;
+              opacity: 0.06;
+              filter: grayscale(1) blur(1px);
+              pointer-events: none; user-select: none;">
+
+  <div class="card shadow" style="width:380px; position: relative; z-index: 1;">
     <div class="card-body p-4">
       <div class="text-center mb-4">
         <img src="/static/img/Logo Acessus.png" alt="ACESSUS" height="80"
