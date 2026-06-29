@@ -51,19 +51,34 @@
             <input type="text" name="whatsapp" class="form-control" placeholder="+55 19 9 9999-9999">
           </div>
 
-          <div class="row mb-3">
+          <div class="row mb-1">
             <div class="col-8">
               <label class="form-label fw-semibold">Número OAB</label>
-              <input type="text" name="oab_numero" class="form-control" placeholder="123456">
+              <input type="text" name="oab_numero" id="oab_numero" class="form-control" placeholder="123456">
             </div>
             <div class="col-4">
               <label class="form-label fw-semibold">UF OAB</label>
-              <select name="oab_uf" class="form-select">
+              <select name="oab_uf" id="oab_uf" class="form-select">
                 <option value="">—</option>
                 {% for uf in uf_lista %}
                 <option value="{{ uf }}">{{ uf }}</option>
                 {% endfor %}
               </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="verificarOAB()">
+              <i class="bi bi-box-arrow-up-right me-1"></i>Verificar OAB no site do CFO
+            </button>
+            <div class="form-text">Preencha o número e UF antes de verificar.</div>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="oab_confirmado" name="oab_confirmado" required>
+              <label class="form-check-label fw-semibold text-danger" for="oab_confirmado">
+                Confirmei que o número OAB está ativo e regular
+              </label>
             </div>
           </div>
 
@@ -91,4 +106,19 @@
   </div>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function verificarOAB() {
+  var num = document.getElementById('oab_numero').value.trim();
+  var uf  = document.getElementById('oab_uf').value.trim();
+  if (!num || !uf) {
+    alert('Preencha o número OAB e a UF antes de verificar.');
+    return;
+  }
+  var url = 'https://cfoab.org.br/advogados/busca?nome=&inscricao=' + encodeURIComponent(num) + '&uf=' + encodeURIComponent(uf);
+  window.open(url, '_blank');
+}
+</script>
 {% endblock %}
