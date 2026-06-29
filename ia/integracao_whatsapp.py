@@ -495,9 +495,27 @@ def processar_escolha(mensagem, numero, sessao):
     protocolo_txt = f"\n\n*Protocolo do seu caso:* {protocolo}" if protocolo else ""
 
     if opcao in ("advogado", "advogado_urgente"):
-        prefixo  = "⚠️ *Caso urgente encaminhado.*\n\n" if opcao == "advogado_urgente" else "✅ *Caso encaminhado para advogado parceiro.*\n\n"
+        urgente  = (opcao == "advogado_urgente")
+        prefixo  = "⚠️ *Caso urgente encaminhado.*\n\n" if urgente else "✅ *Caso encaminhado para advogado parceiro.*\n\n"
         area_txt = f"*Área:* {area}\n\n" if area else ""
         prot_txt = f"*Protocolo:* {protocolo}\n\n" if protocolo else ""
+
+        # Notifica advogado por e-mail
+        if protocolo:
+            from banco.banco_dados import buscar_caso_por_id
+            from ia.notificacoes import enviar_email_advogado
+            dados = buscar_caso_por_id(protocolo)
+            if dados:
+                _, _, _, wa_cliente, relato_db, tipo_db, prio_db, _, _ = dados
+                enviar_email_advogado(
+                    protocolo=protocolo,
+                    area=tipo_db or area,
+                    prioridade=prio_db or f"Prioridade {prioridade}",
+                    whatsapp_cliente=wa_cliente,
+                    relato=relato_db,
+                    urgente=urgente
+                )
+
         return (
             prefixo + prot_txt + area_txt +
             "Um advogado receberá seu caso e entrará em contato em breve.\n\n"

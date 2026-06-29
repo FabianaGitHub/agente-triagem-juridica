@@ -67,6 +67,15 @@ def criar_banco():
         """)
 
     conn.commit()
+
+    # Migração: adiciona coluna encaminhamento se não existir (SQLite)
+    if not USANDO_POSTGRES:
+        try:
+            cursor.execute("ALTER TABLE CASOS ADD COLUMN encaminhamento TEXT")
+            conn.commit()
+        except Exception:
+            pass  # coluna já existe
+
     conn.close()
     print("[Banco] Inicializado com sucesso.")
 
