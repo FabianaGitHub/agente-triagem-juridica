@@ -9,70 +9,175 @@ Perguntas de triagem e informações de encaminhamento por área jurídica.
 # e opcionalmente "especial" para tratamento de fluxo condicional.
 
 PERGUNTAS = {
+    # ── Direito do Consumidor — cobrança indevida ─────────────────────────────
     ("Direito do Consumidor", "cobranca_indevida"): [
         {
             "chave": "cidade",
             "texto": "Em qual cidade você está?"
         },
         {
-            "chave": "descricao_cobranca",
-            "texto": "O que foi cobrado indevidamente? Descreva brevemente."
-        },
-        {
-            "chave": "forma_pagamento",
+            "chave": "tipo_cobranca",
             "texto": (
-                "Qual foi a forma de pagamento?\n\n"
-                "1️⃣ PIX à vista\n"
-                "2️⃣ Cartão de crédito parcelado\n"
-                "3️⃣ Cartão de débito\n"
-                "4️⃣ Boleto\n"
+                "O que foi cobrado indevidamente?\n\n"
+                "1️⃣ Produto ou serviço não contratado\n"
+                "2️⃣ Valor maior que o combinado\n"
+                "3️⃣ Cobrança após cancelamento\n"
+                "4️⃣ Cobrança duplicada\n"
                 "5️⃣ Outro\n\n"
-                "_Responda com o número ou descreva._"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Produto ou serviço não contratado",
+                "2": "Valor maior que o combinado",
+                "3": "Cobrança após cancelamento",
+                "4": "Cobrança duplicada",
+                "5": "Outro"
+            }
+        },
+        {
+            "chave": "empresa_contatada",
+            "texto": (
+                "Você já entrou em contato com a empresa?\n\n"
+                "1️⃣ Sim, mas não resolveram\n"
+                "2️⃣ Sim, ainda estão analisando\n"
+                "3️⃣ Ainda não entrei em contato\n\n"
+                "_Responda com 1, 2 ou 3._"
+            ),
+            "opcoes": {
+                "1": "Sim, a empresa não resolveu",
+                "2": "Sim, estão analisando",
+                "3": "Ainda não"
+            }
+        },
+        {
+            "chave": "procon_registrado",
+            "texto": (
+                "Você já registrou reclamação no Procon ou Consumidor.gov.br?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "comprovante",
+            "texto": (
+                "Você tem comprovante da cobrança (nota fiscal, extrato, mensagem)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
             )
-        },
-        {
-            "chave": "data",
-            "texto": "Qual foi a data aproximada da cobrança?"
-        },
-        {
-            "chave": "retorno_empresa",
-            "texto": "Você já entrou em contato com a empresa? Se sim, qual foi a resposta?"
         },
     ],
+
+    # ── Direito do Consumidor — produto não entregue ──────────────────────────
     ("Direito do Consumidor", "produto_nao_entregue"): [
-        {
-            "chave": "item_comprado",
-            "texto": "O que foi comprado (produto ou serviço)?"
-        },
-        {
-            "chave": "forma_pagamento",
-            "texto": (
-                "Qual foi a forma de pagamento?\n\n"
-                "1️⃣ PIX à vista\n"
-                "2️⃣ Cartão de crédito parcelado\n"
-                "3️⃣ Cartão de débito\n"
-                "4️⃣ Boleto\n"
-                "5️⃣ Outro\n\n"
-                "_Responda com o número ou descreva._"
-            )
-        },
-        {
-            "chave": "datas",
-            "texto": "Qual foi a data da compra e o prazo prometido para entrega?"
-        },
-        {
-            "chave": "retorno_empresa",
-            "texto": "Você já entrou em contato com a empresa? Se sim, qual foi a resposta?"
-        },
         {
             "chave": "cidade",
             "texto": "Em qual cidade você está?"
         },
+        {
+            "chave": "tipo_compra",
+            "texto": (
+                "O que foi comprado?\n\n"
+                "1️⃣ Produto físico (roupas, eletrônicos, móveis...)\n"
+                "2️⃣ Serviço (instalação, reforma, curso...)\n"
+                "3️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {"1": "Produto físico", "2": "Serviço", "3": "Outro"}
+        },
+        {
+            "chave": "forma_pagamento",
+            "texto": (
+                "Qual foi a forma de pagamento?\n\n"
+                "1️⃣ PIX à vista\n"
+                "2️⃣ Cartão de crédito parcelado\n"
+                "3️⃣ Cartão de débito\n"
+                "4️⃣ Boleto\n"
+                "5️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "PIX à vista",
+                "2": "Cartão de crédito parcelado",
+                "3": "Cartão de débito",
+                "4": "Boleto",
+                "5": "Outro"
+            }
+        },
+        {
+            "chave": "prazo_estourado",
+            "texto": (
+                "O prazo de entrega prometido já passou?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não, ainda está no prazo\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim, prazo já passou", "2": "Ainda está no prazo"}
+        },
+        {
+            "chave": "empresa_contatada",
+            "texto": (
+                "Você já entrou em contato com a empresa sobre a entrega?\n\n"
+                "1️⃣ Sim, mas não resolveram\n"
+                "2️⃣ Sim, prometeram resolver\n"
+                "3️⃣ Ainda não\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, a empresa não resolveu",
+                "2": "Sim, prometeram resolver",
+                "3": "Ainda não"
+            }
+        },
+        {
+            "chave": "comprovante",
+            "texto": (
+                "Você tem comprovante da compra (nota fiscal, pedido, recibo)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
+        },
     ],
+
+    # ── Direito do Consumidor — plano de saúde ────────────────────────────────
     ("Direito do Consumidor", "plano_saude"): [
         {
             "chave": "o_que_foi_negado",
-            "texto": "O que foi negado pelo plano? (procedimento, internação, medicamento, exame...)"
+            "texto": (
+                "O que o plano negou?\n\n"
+                "1️⃣ Internação ou cirurgia\n"
+                "2️⃣ Exame ou diagnóstico\n"
+                "3️⃣ Medicamento\n"
+                "4️⃣ Consulta com especialista\n"
+                "5️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Internação ou cirurgia",
+                "2": "Exame ou diagnóstico",
+                "3": "Medicamento",
+                "4": "Consulta com especialista",
+                "5": "Outro"
+            }
         },
         {
             "chave": "risco_vida",
@@ -87,31 +192,119 @@ PERGUNTAS = {
         },
         {
             "chave": "negativa_escrita",
-            "texto": "Você tem a negativa por escrito (carta, e-mail, mensagem)?"
+            "texto": (
+                "Você tem a negativa por escrito (carta, e-mail, mensagem)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não, foi verbal\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim, tem por escrito", "2": "Não, foi verbal"}
+        },
+        {
+            "chave": "anos_plano",
+            "texto": (
+                "Há quanto tempo você tem esse plano de saúde?\n\n"
+                "1️⃣ Menos de 1 ano\n"
+                "2️⃣ Entre 1 e 5 anos\n"
+                "3️⃣ Mais de 5 anos\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Menos de 1 ano",
+                "2": "Entre 1 e 5 anos",
+                "3": "Mais de 5 anos"
+            }
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
         },
     ],
+
+    # ── Direito do Consumidor — geral ─────────────────────────────────────────
     ("Direito do Consumidor", "consumidor_geral"): [
-        {
-            "chave": "descricao",
-            "texto": "Pode me contar mais detalhes sobre o que aconteceu?"
-        },
-        {
-            "chave": "data",
-            "texto": "Qual foi a data aproximada?"
-        },
-        {
-            "chave": "retorno_empresa",
-            "texto": "Você já entrou em contato com a empresa? Se sim, qual foi a resposta?"
-        },
         {
             "chave": "cidade",
             "texto": "Em qual cidade você está?"
         },
+        {
+            "chave": "tipo_problema",
+            "texto": (
+                "Qual é o tipo de problema?\n\n"
+                "1️⃣ Produto com defeito\n"
+                "2️⃣ Serviço mal prestado\n"
+                "3️⃣ Propaganda enganosa\n"
+                "4️⃣ Dificuldade em cancelar contrato\n"
+                "5️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Produto com defeito",
+                "2": "Serviço mal prestado",
+                "3": "Propaganda enganosa",
+                "4": "Dificuldade em cancelar contrato",
+                "5": "Outro"
+            }
+        },
+        {
+            "chave": "empresa_contatada",
+            "texto": (
+                "Você já entrou em contato com a empresa?\n\n"
+                "1️⃣ Sim, mas não resolveram\n"
+                "2️⃣ Sim, estão analisando\n"
+                "3️⃣ Ainda não\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, a empresa não resolveu",
+                "2": "Sim, estão analisando",
+                "3": "Ainda não"
+            }
+        },
+        {
+            "chave": "comprovante",
+            "texto": (
+                "Você tem algum comprovante (nota, contrato, print, recibo)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
+        },
     ],
+
+    # ── Direito Trabalhista ───────────────────────────────────────────────────
     ("Direito Trabalhista", "trabalhista"): [
         {
-            "chave": "descricao",
-            "texto": "O que aconteceu? (demissão, salário atrasado, horas extras não pagas, outro)"
+            "chave": "tipo_problema",
+            "texto": (
+                "O que aconteceu?\n\n"
+                "1️⃣ Fui demitido(a)\n"
+                "2️⃣ Salário atrasado ou não pago\n"
+                "3️⃣ Horas extras não pagas\n"
+                "4️⃣ Acidente de trabalho\n"
+                "5️⃣ Assédio ou discriminação\n"
+                "6️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Demissão",
+                "2": "Salário atrasado ou não pago",
+                "3": "Horas extras não pagas",
+                "4": "Acidente de trabalho",
+                "5": "Assédio ou discriminação",
+                "6": "Outro"
+            }
         },
         {
             "chave": "carteira_assinada",
@@ -124,23 +317,105 @@ PERGUNTAS = {
             "opcoes": {"1": "Sim", "2": "Não"}
         },
         {
-            "chave": "ultimo_dia",
-            "texto": "Qual foi o último dia de trabalho (ou ainda está trabalhando)?"
+            "chave": "ainda_trabalhando",
+            "texto": (
+                "Você ainda está trabalhando nessa empresa?\n\n"
+                "1️⃣ Sim, ainda estou\n"
+                "2️⃣ Não, já saí\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim, ainda está trabalhando", "2": "Não, já saiu"}
         },
         {
-            "chave": "situacao_rescisao",
-            "texto": "Você recebeu algum valor na rescisão ou ainda está aguardando?"
+            "chave": "verbas_rescisoras",
+            "texto": (
+                "Recebeu as verbas rescisórias (FGTS, aviso prévio, 13º)?\n\n"
+                "1️⃣ Sim, recebi tudo\n"
+                "2️⃣ Recebi só uma parte\n"
+                "3️⃣ Não recebi nada\n"
+                "4️⃣ Ainda estou trabalhando lá\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, recebeu tudo",
+                "2": "Recebeu parcialmente",
+                "3": "Não recebeu nada",
+                "4": "Ainda está trabalhando"
+            }
+        },
+        {
+            "chave": "ultimo_dia",
+            "texto": "Qual foi o último dia de trabalho (ou há quanto tempo trabalha lá)?"
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
         },
     ],
+
+    # ── Direito de Família ────────────────────────────────────────────────────
     ("Direito de Família", "familia"): [
         {
             "chave": "tipo_situacao",
-            "texto": "Qual é a situação? (divórcio, guarda de filhos, pensão alimentícia, herança, outro)"
+            "texto": (
+                "Qual é a situação?\n\n"
+                "1️⃣ Divórcio ou separação\n"
+                "2️⃣ Guarda de filhos\n"
+                "3️⃣ Pensão alimentícia\n"
+                "4️⃣ Herança ou inventário\n"
+                "5️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Divórcio ou separação",
+                "2": "Guarda de filhos",
+                "3": "Pensão alimentícia",
+                "4": "Herança ou inventário",
+                "5": "Outro"
+            }
+        },
+        {
+            "chave": "imovel_envolvido",
+            "texto": (
+                "O caso envolve um imóvel (casa, terreno ou apartamento)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "familiar_falecido",
+            "texto": (
+                "O imóvel ou bem pertencia a um familiar que faleceu?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "inventario_aberto",
+            "texto": (
+                "Já foi aberto inventário ou processo de partilha dos bens?\n\n"
+                "1️⃣ Sim, já foi aberto\n"
+                "2️⃣ Não foi aberto ainda\n"
+                "3️⃣ Não sei informar\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, inventário já aberto",
+                "2": "Não foi aberto",
+                "3": "Não sabe informar"
+            }
         },
         {
             "chave": "filhos_menores",
             "texto": (
-                "Há filhos menores envolvidos?\n\n"
+                "Há filhos menores de 18 anos envolvidos?\n\n"
                 "1️⃣ Sim\n"
                 "2️⃣ Não\n\n"
                 "_Responda com 1 ou 2._"
@@ -149,31 +424,117 @@ PERGUNTAS = {
         },
         {
             "chave": "acordo_existente",
-            "texto": "Já existe algum acordo ou processo judicial em andamento?"
+            "texto": (
+                "Já existe algum acordo, processo judicial ou decisão sobre isso?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
         },
     ],
+
+    # ── Direito Bancário ──────────────────────────────────────────────────────
     ("Direito Bancário", "bancario"): [
         {
-            "chave": "descricao",
-            "texto": "O que aconteceu? (cobrança indevida, juros abusivos, negativação indevida, fraude, outro)"
+            "chave": "tipo_problema",
+            "texto": (
+                "O que aconteceu?\n\n"
+                "1️⃣ Cobrança indevida ou juros abusivos\n"
+                "2️⃣ Nome negativado indevidamente\n"
+                "3️⃣ Fraude ou golpe (clonagem, PIX falso)\n"
+                "4️⃣ Empréstimo ou desconto não autorizado\n"
+                "5️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Cobrança indevida ou juros abusivos",
+                "2": "Nome negativado indevidamente",
+                "3": "Fraude ou golpe",
+                "4": "Empréstimo ou desconto não autorizado",
+                "5": "Outro"
+            }
         },
         {
             "chave": "banco",
-            "texto": "Em qual banco ou instituição financeira?"
+            "texto": "Em qual banco ou instituição financeira ocorreu o problema?"
         },
         {
-            "chave": "data",
-            "texto": "Qual foi a data aproximada do ocorrido?"
+            "chave": "banco_contatado",
+            "texto": (
+                "Você já entrou em contato com o banco sobre isso?\n\n"
+                "1️⃣ Sim, mas não resolveram\n"
+                "2️⃣ Sim, estão analisando\n"
+                "3️⃣ Ainda não\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, o banco não resolveu",
+                "2": "Sim, estão analisando",
+                "3": "Ainda não"
+            }
         },
         {
-            "chave": "retorno_banco",
-            "texto": "Você já entrou em contato com o banco? Se sim, qual foi a resposta?"
+            "chave": "boletim_ocorrencia",
+            "texto": (
+                "Você registrou boletim de ocorrência (para casos de fraude ou golpe)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n"
+                "3️⃣ Não se aplica ao meu caso\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, B.O. registrado",
+                "2": "Não registrou",
+                "3": "Não se aplica"
+            }
+        },
+        {
+            "chave": "comprovante",
+            "texto": (
+                "Você tem comprovante do problema (extrato, print, notificação)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
         },
     ],
+
+    # ── Previdência Social ────────────────────────────────────────────────────
     ("Previdência Social", "inss"): [
         {
-            "chave": "beneficio",
-            "texto": "Qual benefício está envolvido? (aposentadoria, auxílio-doença, BPC/LOAS, outro)"
+            "chave": "tipo_beneficio",
+            "texto": (
+                "Qual benefício está envolvido?\n\n"
+                "1️⃣ Aposentadoria por tempo ou idade\n"
+                "2️⃣ Auxílio-doença ou afastamento\n"
+                "3️⃣ BPC/LOAS (benefício assistencial)\n"
+                "4️⃣ Pensão por morte\n"
+                "5️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Aposentadoria",
+                "2": "Auxílio-doença ou afastamento",
+                "3": "BPC/LOAS",
+                "4": "Pensão por morte",
+                "5": "Outro"
+            }
         },
         {
             "chave": "foi_ao_inss",
@@ -184,11 +545,46 @@ PERGUNTAS = {
                 "_Responda com 1 ou 2._"
             ),
             "especial": "foi_inss",
-            "opcoes": {"1": "Sim, já fui / já liguei", "2": "Ainda não"}
+            "opcoes": {"1": "Sim, já foi / já ligou", "2": "Ainda não"}
         },
         {
-            "chave": "situacao_inss",
-            "texto": "Qual foi a resposta ou situação atual no INSS?"
+            "chave": "beneficio_negado",
+            "texto": (
+                "O benefício foi negado ou cancelado?\n\n"
+                "1️⃣ Sim, foi negado\n"
+                "2️⃣ Sim, foi cancelado\n"
+                "3️⃣ Ainda não recebi resposta\n"
+                "4️⃣ Outro problema\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Benefício negado",
+                "2": "Benefício cancelado",
+                "3": "Sem resposta ainda",
+                "4": "Outro"
+            }
+        },
+        {
+            "chave": "tempo_contribuicao",
+            "texto": (
+                "Você tem ou teve carteira assinada (contribuiu para o INSS)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não, trabalho(ei) por conta própria\n"
+                "3️⃣ Nunca contribuí\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, com carteira assinada",
+                "2": "Trabalhou por conta própria",
+                "3": "Nunca contribuiu"
+            }
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
         },
     ],
 }
