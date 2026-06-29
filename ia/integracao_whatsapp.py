@@ -9,7 +9,10 @@ from ia.motor_decisao import MotorDecisaoJuridica as MotorDecisao
 from ia.base_conhecimento import (
     obter_perguntas, CEJUSC_INFO, PROCON_INFO, JEC_INFO, ANS_INFO, MEU_INSS_INFO
 )
-from banco.banco_dados import salvar_caso, criar_banco, gerar_id_sequencial
+from banco.banco_dados import (salvar_caso, criar_banco, gerar_id_sequencial,
+                               registrar_consentimento, verificar_consentimento,
+                               revogar_consentimento, salvar_sessao, obter_sessao,
+                               deletar_sessao)
 
 _TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates')
 app = Flask(__name__, template_folder=_TEMPLATE_DIR)
@@ -22,17 +25,20 @@ criar_banco()
 
 ADVOGADOS_SENHA = os.environ.get('ADVOGADOS_SENHA', 'acessus2026')
 
-# ── Memória de sessões ──────────────────────────────────────────────────────
-# sessoes[numero] = {
-#   "estado": "aguardando_consentimento" | "fazendo_perguntas" | "aguardando_escolha",
-#   ...
-# }
-sessoes = {}
+# ── Sessões e consentimentos persistidos no banco ────────────────────────────
+# Substituem os dicts/sets em memória — sobrevivem a reinícios do servidor.
 
-# ── Consentimentos ──────────────────────────────────────────────────────────
-# Números que já aceitaram o termo nesta sessão do servidor.
-# Perdido ao reiniciar — migração para banco está na lista de melhorias.
-consentidos = set()
+def _get_sessao(numero):
+    dados = obter_sessao(numero)
+    if dados and 'area' in dados and 'sub_area' in dados:
+        dados['perguntas'] = obter_perguntas(dados['area'], dados['sub_area'])
+    return dados or {}
+
+def _set_sessao(numero, dados):
+    salvar_sessao(numero, dados)
+
+def _del_sessao(numero):
+    deletar_sessao(numero)
 
 # ── Histórico diário ────────────────────────────────────────────────────────
 # historico[numero][data][area] = quantidade de perguntas
@@ -135,8 +141,8 @@ def processar_consentimento(mensagem, numero):
     escolha = mensagem.strip()
 
     if escolha == "1":
-        consentidos.add(numero)
-        sessoes.pop(numero, None)
+        registrar_consentimento(numero)
+        _del_sessao(numero)
         return (
             "✅ Consentimento registrado. Obrigado!\n\n"
             "Agora pode me descrever sua situação jurídica com o máximo "
@@ -144,7 +150,8 @@ def processar_consentimento(mensagem, numero):
         )
 
     elif escolha == "2":
-        sessoes.pop(numero, None)
+        revogar_consentimento(numero)
+        _del_sessao(numero)
         return (
             "Tudo bem. Seus dados não serão utilizados.\n\n"
             "Se mudar de ideia no futuro, é só me enviar uma mensagem "
@@ -168,7 +175,7 @@ def whatsapp_webhook():
     numero   = request.values.get('From', '')
 
     resp   = MessagingResponse()
-    sessao = sessoes.get(numero, {})
+    sessao = _get_sessao(numero)
     estado = sessao.get("estado", "novo")
 
     if estado == "aguardando_consentimento":
@@ -177,10 +184,10 @@ def whatsapp_webhook():
         resposta = processar_resposta_pergunta(mensagem, numero, sessao)
     elif estado == "aguardando_escolha":
         resposta = processar_escolha(mensagem, numero, sessao)
-    elif numero in consentidos:
+    elif verificar_consentimento(numero):
         resposta = processar_relato(mensagem, numero)
     else:
-        sessoes[numero] = {"estado": "aguardando_consentimento"}
+        _set_sessao(numero, {"estado": "aguardando_consentimento"})
         resposta = TERMO_CONSENTIMENTO
 
     resp.message(resposta)
@@ -192,14 +199,14 @@ def whatsapp_webhook():
 def processar_relato(mensagem, numero):
     total = total_perguntas_hoje(numero)
     if total >= LIMITE_BLOQUEIO:
-        sessoes[numero] = {
+        _set_sessao(numero, {
             "estado": "aguardando_escolha",
             "protocolo": "",
             "area": "",
             "sub_area": "",
             "opcoes": ["advogado", "defensoria"],
             "respostas": {}
-        }
+        })
         return (
             "Identifiquei que você já realizou várias consultas hoje por "
             "esta via.\n\n"
@@ -230,14 +237,14 @@ def processar_relato(mensagem, numero):
             whatsapp=numero
         )
         opcoes_texto, opcoes_lista = obter_opcoes(area, sub_area, {})
-        sessoes[numero] = {
+        _set_sessao(numero, {
             "estado": "aguardando_escolha",
             "protocolo": protocolo,
             "area": area,
             "sub_area": sub_area,
             "opcoes": opcoes_lista,
             "respostas": {}
-        }
+        })
         return (
             f"*Protocolo:* {protocolo}\n\n"
             f"Já orientei sobre *{area}* anteriormente nesta conversa.\n\n"
@@ -256,7 +263,7 @@ def processar_relato(mensagem, numero):
 def iniciar_questionario(area, sub_area, relato, numero, prioridade):
     perguntas = obter_perguntas(area, sub_area)
 
-    sessoes[numero] = {
+    sessao_nova = {
         "estado": "fazendo_perguntas",
         "area": area,
         "sub_area": sub_area,
@@ -266,9 +273,10 @@ def iniciar_questionario(area, sub_area, relato, numero, prioridade):
         "respostas": {},
         "prioridade": prioridade
     }
+    _set_sessao(numero, sessao_nova)
 
     if not perguntas:
-        return finalizar_questionario(numero, sessoes[numero])
+        return finalizar_questionario(numero, sessao_nova)
 
     if area == "Indefinida":
         return (
@@ -298,7 +306,7 @@ def processar_resposta_pergunta(mensagem, numero, sessao):
     resposta_limpa = mensagem.strip()
 
     if chave == "cidade" and resposta_limpa.lower() in _SAUDACOES:
-        sessoes[numero] = sessao
+        _set_sessao(numero, sessao)
         return "Por favor, me informe o nome da sua cidade para continuar."
 
     # Converte número da opção para o texto legível (ex: "2" → "Não")
@@ -325,7 +333,7 @@ def processar_resposta_pergunta(mensagem, numero, sessao):
 
     sessao["indice_atual"] = proximo
     sessao["respostas"]    = respostas
-    sessoes[numero]        = sessao
+    _set_sessao(numero, sessao)
 
     return perguntas[proximo]["texto"]
 
@@ -360,14 +368,14 @@ def finalizar_questionario(numero, sessao, urgente=False):
     else:
         opcoes_texto, opcoes_lista = obter_opcoes(area, sub_area, respostas)
 
-    sessoes[numero] = {
+    _set_sessao(numero, {
         "estado": "aguardando_escolha",
         "protocolo": protocolo,
         "area": area,
         "sub_area": sub_area,
         "opcoes": opcoes_lista,
         "respostas": respostas
-    }
+    })
 
     return (
         f"Obrigado pelas informações.\n\n"
@@ -494,11 +502,11 @@ def processar_escolha(mensagem, numero, sessao):
             raise ValueError
         opcao = opcoes[indice]
     except (ValueError, IndexError):
-        sessoes[numero] = sessao
+        _set_sessao(numero, sessao)
         numeros = " ou ".join(str(i) for i in range(1, len(opcoes) + 1))
         return f"Não entendi sua resposta. Por favor, responda com {numeros}."
 
-    sessoes.pop(numero, None)
+    _del_sessao(numero)
 
     cidade        = respostas.get("cidade", "").strip()
     protocolo_txt = f"\n\n*Protocolo do seu caso:* {protocolo}" if protocolo else ""
