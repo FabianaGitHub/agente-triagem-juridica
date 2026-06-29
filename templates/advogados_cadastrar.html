@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block titulo %}Cadastrar Advogado{% endblock %}
+{% block conteudo %}
+<div class="row g-0">
+
+  <!-- Sidebar -->
+  <div class="col-md-3 col-lg-2 sidebar p-3">
+    <p class="text-uppercase text-muted mb-3"
+       style="font-size:.7rem; letter-spacing:.06em; font-weight:600;">Menu</p>
+    <a href="/advogados" class="filtro-link">
+      <i class="bi bi-folder2-open me-1"></i>Casos
+    </a>
+    <a href="/advogados/lista" class="filtro-link">
+      <i class="bi bi-person-badge me-1"></i>Advogados
+    </a>
+    <a href="/advogados/cadastrar" class="filtro-link ativo">
+      <i class="bi bi-person-plus me-1"></i>Cadastrar advogado
+    </a>
+  </div>
+
+  <!-- Formulário -->
+  <div class="col-md-9 col-lg-10 p-4">
+    <div class="d-flex align-items-center mb-4 gap-3">
+      <a href="/advogados/lista" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+      </a>
+      <h5 class="fw-bold mb-0" style="color:#1a3c5e;">CADASTRAR ADVOGADO</h5>
+    </div>
+
+    {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+    {% endif %}
+
+    <div class="card shadow-sm" style="max-width:700px;">
+      <div class="card-body p-4">
+        <form method="POST" action="/advogados/cadastrar">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nome completo <span class="text-danger">*</span></label>
+            <input type="text" name="nome" class="form-control" placeholder="Dr(a). Nome Sobrenome" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
+            <input type="email" name="email" class="form-control" placeholder="advogado@email.com" required>
+            <div class="form-text">Para onde os casos serão encaminhados.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">WhatsApp</label>
+            <input type="text" name="whatsapp" class="form-control" placeholder="+55 19 9 9999-9999">
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-8">
+              <label class="form-label fw-semibold">Número OAB</label>
+              <input type="text" name="oab_numero" class="form-control" placeholder="123456">
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-semibold">UF OAB</label>
+              <select name="oab_uf" class="form-select">
+                <option value="">—</option>
+                {% for uf in uf_lista %}
+                <option value="{{ uf }}">{{ uf }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Áreas de atuação</label>
+            <div class="form-text mb-2">Deixe em branco para atender todas as áreas.</div>
+            {% for area in areas_juridicas %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="areas" value="{{ area }}" id="area_{{ loop.index }}">
+              <label class="form-check-label" for="area_{{ loop.index }}">{{ area }}</label>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn text-white" style="background-color:#1a3c5e;">
+              <i class="bi bi-check-circle me-1"></i>Salvar advogado
+            </button>
+            <a href="/advogados/lista" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

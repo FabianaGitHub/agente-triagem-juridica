@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block titulo %}Advogados Cadastrados{% endblock %}
+{% block conteudo %}
+<div class="row g-0">
+
+  <!-- Sidebar -->
+  <div class="col-md-3 col-lg-2 sidebar p-3">
+    <p class="text-uppercase text-muted mb-3"
+       style="font-size:.7rem; letter-spacing:.06em; font-weight:600;">Menu</p>
+    <a href="/advogados" class="filtro-link">
+      <i class="bi bi-folder2-open me-1"></i>Casos
+    </a>
+    <a href="/advogados/lista" class="filtro-link ativo">
+      <i class="bi bi-person-badge me-1"></i>Advogados
+    </a>
+    <a href="/advogados/cadastrar" class="filtro-link">
+      <i class="bi bi-person-plus me-1"></i>Cadastrar advogado
+    </a>
+  </div>
+
+  <!-- Conteúdo -->
+  <div class="col-md-9 col-lg-10 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="fw-bold mb-0" style="color:#1a3c5e;">ADVOGADOS CADASTRADOS</h5>
+      <a href="/advogados/cadastrar" class="btn btn-sm text-white" style="background-color:#1a3c5e;">
+        <i class="bi bi-person-plus me-1"></i>Novo advogado
+      </a>
+    </div>
+
+    {% if advogados %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover bg-white shadow-sm" style="font-size:.88rem;">
+        <thead style="background:#1a3c5e; color:white;">
+          <tr>
+            <th>Nome</th>
+            <th>OAB</th>
+            <th>E-mail</th>
+            <th>WhatsApp</th>
+            <th>Áreas de atuação</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for adv in advogados %}
+          <tr class="{% if not adv.ativo %}table-secondary text-muted{% endif %}">
+            <td class="fw-semibold">{{ adv.nome }}</td>
+            <td>
+              {% if adv.oab_numero %}
+                {{ adv.oab_numero }}/{{ adv.oab_uf }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>{{ adv.email }}</td>
+            <td>
+              {% if adv.whatsapp %}
+                <i class="bi bi-whatsapp text-success"></i> {{ adv.whatsapp }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if adv.areas %}
+                {% for area in adv.areas %}
+                  <span class="badge bg-primary me-1 mb-1" style="font-size:.75rem;">{{ area }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="badge bg-secondary">Todas as áreas</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if adv.ativo %}
+                <span class="badge bg-success">Ativo</span>
+              {% else %}
+                <span class="badge bg-secondary">Inativo</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <form method="POST" action="/advogados/{{ adv.id }}/status" class="d-inline">
+                {% if adv.ativo %}
+                  <input type="hidden" name="ativo" value="0">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-pause-circle me-1"></i>Desativar
+                  </button>
+                {% else %}
+                  <input type="hidden" name="ativo" value="1">
+                  <button type="submit" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-play-circle me-1"></i>Ativar
+                  </button>
+                {% endif %}
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-person-x d-block mb-2" style="font-size:2.5rem;"></i>
+      Nenhum advogado cadastrado ainda.<br>
+      <a href="/advogados/cadastrar" class="btn btn-sm mt-3" style="background-color:#1a3c5e; color:white;">
+        Cadastrar primeiro advogado
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

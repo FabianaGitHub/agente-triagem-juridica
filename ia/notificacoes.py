@@ -104,9 +104,11 @@ def _montar_html(protocolo, area, prioridade, whatsapp_cliente, relato, urgente)
 """
 
 
-def enviar_email_advogado(protocolo, area, prioridade, whatsapp_cliente, relato, urgente=False):
+def enviar_email_advogado(protocolo, area, prioridade, whatsapp_cliente, relato,
+                          urgente=False, email_destino=None):
     """Notifica o advogado por e-mail quando um caso é encaminhado. Retorna True se enviado."""
-    if not SENDGRID_API_KEY or not EMAIL_REMETENTE or not ADVOGADO_EMAIL:
+    destinatario = email_destino or ADVOGADO_EMAIL
+    if not SENDGRID_API_KEY or not EMAIL_REMETENTE or not destinatario:
         logger.warning('[SendGrid] Variáveis não configuradas — e-mail ignorado.')
         return False
 
@@ -116,7 +118,7 @@ def enviar_email_advogado(protocolo, area, prioridade, whatsapp_cliente, relato,
 
     mensagem = Mail(
         from_email=EMAIL_REMETENTE,
-        to_emails=ADVOGADO_EMAIL,
+        to_emails=destinatario,
         subject=assunto,
         html_content=HtmlContent(html)
     )
@@ -124,7 +126,7 @@ def enviar_email_advogado(protocolo, area, prioridade, whatsapp_cliente, relato,
     try:
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         resp = sg.send(mensagem)
-        logger.info(f'[SendGrid] Enviado para {ADVOGADO_EMAIL} — HTTP {resp.status_code}')
+        logger.info(f'[SendGrid] Enviado para {destinatario} — HTTP {resp.status_code}')
         return True
     except Exception as e:
         logger.error(f'[SendGrid] Falha ao enviar: {e}')

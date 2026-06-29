@@ -12,7 +12,21 @@ from ia.base_conhecimento import (
 from banco.banco_dados import (salvar_caso, criar_banco, gerar_id_sequencial,
                                registrar_consentimento, verificar_consentimento,
                                revogar_consentimento, salvar_sessao, obter_sessao,
-                               deletar_sessao)
+                               deletar_sessao, criar_advogado, listar_advogados,
+                               buscar_advogado_por_area, atualizar_status_advogado)
+
+AREAS_JURIDICAS = [
+    'Direito do Consumidor',
+    'Direito Trabalhista',
+    'Direito de Família',
+    'Direito Bancário',
+    'Previdência Social',
+]
+
+UF_LISTA = [
+    'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',
+    'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO',
+]
 
 _TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates')
 app = Flask(__name__, template_folder=_TEMPLATE_DIR)
@@ -517,20 +531,22 @@ def processar_escolha(mensagem, numero, sessao):
         area_txt = f"*Área:* {area}\n\n" if area else ""
         prot_txt = f"*Protocolo:* {protocolo}\n\n" if protocolo else ""
 
-        # Notifica advogado por e-mail
+        # Notifica advogado por e-mail (roteia pelo banco; fallback para env var)
         if protocolo:
             from banco.banco_dados import buscar_caso_por_id
             from ia.notificacoes import enviar_email_advogado
             dados = buscar_caso_por_id(protocolo)
             if dados:
                 _, _, _, wa_cliente, relato_db, tipo_db, prio_db, _, _ = dados
+                adv = buscar_advogado_por_area(tipo_db or area)
                 enviar_email_advogado(
                     protocolo=protocolo,
                     area=tipo_db or area,
-                    prioridade=prio_db or f"Prioridade {prioridade}",
+                    prioridade=prio_db or "Prioridade 3",
                     whatsapp_cliente=wa_cliente,
                     relato=relato_db,
-                    urgente=urgente
+                    urgente=urgente,
+                    email_destino=adv['email'] if adv else None
                 )
 
         return (
@@ -697,6 +713,47 @@ def baixar_pdf(caso_id):
         download_name=f'caso_{caso_id}.pdf',
         mimetype='application/pdf'
     )
+
+
+# ── Gestão de advogados ───────────────────────────────────────────────────────
+
+@app.route('/advogados/lista')
+@requer_login
+def lista_advogados():
+    advs = listar_advogados()
+    return render_template('advogados_lista.html', advogados=advs)
+
+
+@app.route('/advogados/cadastrar', methods=['GET', 'POST'])
+@requer_login
+def cadastrar_advogado():
+    erro = None
+    if request.method == 'POST':
+        nome      = request.form.get('nome', '').strip()
+        email     = request.form.get('email', '').strip()
+        whatsapp  = request.form.get('whatsapp', '').strip()
+        oab_num   = request.form.get('oab_numero', '').strip()
+        oab_uf    = request.form.get('oab_uf', '').strip()
+        areas     = request.form.getlist('areas')
+
+        if not nome or not email:
+            erro = 'Nome e e-mail são obrigatórios.'
+        else:
+            criar_advogado(nome, email, whatsapp, oab_num, oab_uf, areas)
+            return redirect(url_for('lista_advogados'))
+
+    return render_template('advogados_cadastrar.html',
+                           areas_juridicas=AREAS_JURIDICAS,
+                           uf_lista=UF_LISTA,
+                           erro=erro)
+
+
+@app.route('/advogados/<int:adv_id>/status', methods=['POST'])
+@requer_login
+def toggle_advogado(adv_id):
+    ativo_str = request.form.get('ativo', '0')
+    atualizar_status_advogado(adv_id, ativo_str == '1')
+    return redirect(url_for('lista_advogados'))
 
 
 # ── Rota de verificação ───────────────────────────────────────────────────────

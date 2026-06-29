@@ -107,6 +107,37 @@ def criar_banco():
         except Exception:
             pass  # coluna já existe
 
+    # Tabela de advogados cadastrados
+    if USANDO_POSTGRES:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS advogados (
+                id            SERIAL PRIMARY KEY,
+                nome          TEXT NOT NULL,
+                email         TEXT NOT NULL,
+                whatsapp      TEXT,
+                oab_numero    TEXT,
+                oab_uf        TEXT,
+                areas_atuacao TEXT DEFAULT '[]',
+                ativo         BOOLEAN DEFAULT TRUE,
+                cadastrado_em TIMESTAMP DEFAULT NOW()
+            )
+        """)
+    else:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS advogados (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome          TEXT NOT NULL,
+                email         TEXT NOT NULL,
+                whatsapp      TEXT,
+                oab_numero    TEXT,
+                oab_uf        TEXT,
+                areas_atuacao TEXT DEFAULT '[]',
+                ativo         INTEGER DEFAULT 1,
+                cadastrado_em DATETIME DEFAULT (datetime('now','localtime'))
+            )
+        """)
+
+    conn.commit()
     conn.close()
     print("[Banco] Inicializado com sucesso.")
 
@@ -329,5 +360,82 @@ def deletar_sessao(numero):
         cursor.execute("DELETE FROM sessoes_ativas WHERE whatsapp = %s", (numero,))
     else:
         cursor.execute("DELETE FROM sessoes_ativas WHERE whatsapp = ?", (numero,))
+    conn.commit()
+    conn.close()
+
+
+# ── Advogados ─────────────────────────────────────────────────────────────────
+
+def criar_advogado(nome, email, whatsapp, oab_numero, oab_uf, areas_atuacao):
+    """Insere um novo advogado. areas_atuacao é uma lista Python."""
+    areas_json = json.dumps(areas_atuacao, ensure_ascii=False)
+    conn = _conectar()
+    cursor = conn.cursor()
+    if USANDO_POSTGRES:
+        cursor.execute("""
+            INSERT INTO advogados (nome, email, whatsapp, oab_numero, oab_uf, areas_atuacao)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (nome, email, whatsapp, oab_numero, oab_uf, areas_json))
+    else:
+        cursor.execute("""
+            INSERT INTO advogados (nome, email, whatsapp, oab_numero, oab_uf, areas_atuacao)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (nome, email, whatsapp, oab_numero, oab_uf, areas_json))
+    conn.commit()
+    conn.close()
+
+
+def listar_advogados():
+    """Retorna lista de dicts com todos os advogados."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, nome, email, whatsapp, oab_numero, oab_uf, areas_atuacao, ativo, cadastrado_em
+        FROM advogados ORDER BY nome
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    resultado = []
+    for row in rows:
+        id_, nome, email, whatsapp, oab_num, oab_uf, areas_json, ativo, cadastrado_em = row
+        try:
+            areas = json.loads(areas_json or '[]')
+        except Exception:
+            areas = []
+        resultado.append({
+            'id': id_,
+            'nome': nome,
+            'email': email,
+            'whatsapp': whatsapp or '',
+            'oab_numero': oab_num or '',
+            'oab_uf': oab_uf or '',
+            'areas': areas,
+            'ativo': bool(ativo),
+            'cadastrado_em': cadastrado_em,
+        })
+    return resultado
+
+
+def buscar_advogado_por_area(area):
+    """Retorna o primeiro advogado ativo que atende a área, ou None."""
+    advogados = listar_advogados()
+    ativos = [a for a in advogados if a['ativo']]
+    for adv in ativos:
+        if not adv['areas'] or area in adv['areas']:
+            return adv
+    return None
+
+
+def atualizar_status_advogado(adv_id, ativo):
+    """Ativa ou desativa um advogado."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    valor = True if USANDO_POSTGRES else (1 if ativo else 0)
+    if not ativo:
+        valor = False if USANDO_POSTGRES else 0
+    if USANDO_POSTGRES:
+        cursor.execute("UPDATE advogados SET ativo = %s WHERE id = %s", (valor, adv_id))
+    else:
+        cursor.execute("UPDATE advogados SET ativo = ? WHERE id = ?", (valor, adv_id))
     conn.commit()
     conn.close()
