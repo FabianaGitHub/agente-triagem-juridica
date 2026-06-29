@@ -29,7 +29,8 @@ UF_LISTA = [
 ]
 
 _TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates')
-app = Flask(__name__, template_folder=_TEMPLATE_DIR)
+_STATIC_DIR   = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static')
+app = Flask(__name__, template_folder=_TEMPLATE_DIR, static_folder=_STATIC_DIR)
 app.secret_key = os.environ.get('SECRET_KEY', 'acessus-juridico-2026')
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE']   = os.environ.get('DATABASE_URL') is not None  # True só no Render (HTTPS)
