@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block titulo %}Novo Caso{% endblock %}
+{% block conteudo %}
+<div class="row g-0">
+
+  <!-- Sidebar -->
+  <div class="col-md-3 col-lg-2 sidebar p-3">
+    <div class="secao-header">Menu</div>
+    <a href="/advogados" class="filtro-link ativo mb-1">
+      <i class="bi bi-folder2-open me-1"></i>Casos
+    </a>
+    <a href="/advogados/lista" class="filtro-link mb-1">
+      <i class="bi bi-person-badge me-1"></i>Advogados
+    </a>
+    <a href="/advogados/cadastrar" class="filtro-link">
+      <i class="bi bi-person-plus me-1"></i>Cadastrar advogado
+    </a>
+  </div>
+
+  <!-- Formulário -->
+  <div class="col-md-9 col-lg-10 p-4">
+
+    <div class="d-flex align-items-center mb-4 px-3 py-2 rounded gap-3"
+         style="background: linear-gradient(90deg, #000000 0%, #0d2855 100%);">
+      <a href="/advogados" class="btn btn-sm btn-light">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+      </a>
+      <h5 class="fw-bold mb-0 text-white" style="font-size:.95rem; letter-spacing:.04em;">NOVO CASO MANUAL</h5>
+    </div>
+
+    {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+    {% endif %}
+
+    <div class="card shadow-sm" style="max-width:700px;">
+      <div class="card-body p-4">
+        <form method="POST" action="/advogados/novo-caso">
+
+          <div class="row mb-3">
+            <div class="col-8">
+              <label class="form-label fw-semibold">Nome do cliente <span class="text-danger">*</span></label>
+              <input type="text" name="nome" class="form-control" placeholder="Nome completo" required>
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-semibold">WhatsApp</label>
+              <input type="text" name="whatsapp" class="form-control" placeholder="+55 19 9...">
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-8">
+              <label class="form-label fw-semibold">Área jurídica <span class="text-danger">*</span></label>
+              <select name="area" class="form-select" required>
+                <option value="">Selecione...</option>
+                {% for area in areas_juridicas %}
+                <option value="{{ area }}">{{ area }}</option>
+                {% endfor %}
+                <option value="Indefinida">Indefinida</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-semibold">Prioridade</label>
+              <select name="prioridade" class="form-select">
+                <option value="1">1 — Alta</option>
+                <option value="2">2 — Média</option>
+                <option value="3" selected>3 — Normal</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Relato do caso <span class="text-danger">*</span></label>
+            <textarea name="relato" class="form-control" rows="6"
+                      placeholder="Descreva a situação do cliente com o máximo de detalhes possível..."
+                      required></textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn text-white" style="background-color:#3d3d3d;">
+              <i class="bi bi-check-circle me-1"></i>Registrar caso
+            </button>
+            <a href="/advogados" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

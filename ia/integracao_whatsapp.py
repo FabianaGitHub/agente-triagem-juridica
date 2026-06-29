@@ -751,6 +751,40 @@ def baixar_pdf(caso_id):
 
 # ── Gestão de advogados ───────────────────────────────────────────────────────
 
+@app.route('/advogados/novo-caso', methods=['GET', 'POST'])
+@requer_login
+def novo_caso_manual():
+    from banco.banco_dados import inserir_caso
+    erro = None
+    if request.method == 'POST':
+        nome      = request.form.get('nome', '').strip()
+        whatsapp  = request.form.get('whatsapp', '').strip()
+        area      = request.form.get('area', '').strip()
+        prioridade = request.form.get('prioridade', '3').strip()
+        relato    = request.form.get('relato', '').strip()
+
+        if not nome or not relato or not area:
+            erro = 'Nome, área jurídica e relato são obrigatórios.'
+        else:
+            protocolo = gerar_id_sequencial()
+            inserir_caso(
+                id_caso=protocolo,
+                nome_cliente=nome,
+                email='',
+                whatsapp=whatsapp,
+                relato=relato,
+                tipo_caso=area,
+                prioridade=f'Prioridade {prioridade}',
+                anexos='',
+                encaminhamento='Cadastro manual'
+            )
+            return redirect(url_for('dashboard'))
+
+    return render_template('novo_caso.html',
+                           areas_juridicas=AREAS_JURIDICAS,
+                           erro=erro)
+
+
 @app.route('/advogados/lista')
 @requer_login
 def lista_advogados():
