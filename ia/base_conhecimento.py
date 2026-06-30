@@ -356,8 +356,310 @@ PERGUNTAS = {
         },
     ],
 
-    # ── Direito de Família ────────────────────────────────────────────────────
+    # ── Direito de Família — Pensão alimentícia ───────────────────────────────
+    ("Direito de Família", "pensao_alimenticia"): [
+        {
+            "chave": "cidade",
+            "texto": "Em qual cidade você está?"
+        },
+        {
+            "chave": "quem_deve",
+            "texto": (
+                "Quem está sem pagar a pensão?\n\n"
+                "1️⃣ O pai da criança\n"
+                "2️⃣ A mãe da criança\n"
+                "3️⃣ Outro familiar\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "O pai da criança",
+                "2": "A mãe da criança",
+                "3": "Outro familiar"
+            }
+        },
+        {
+            "chave": "acordo_judicial",
+            "texto": (
+                "Já existe um acordo ou decisão judicial fixando o valor da pensão?\n\n"
+                "1️⃣ Sim, tem decisão judicial\n"
+                "2️⃣ Sim, tem acordo extrajudicial (em cartório)\n"
+                "3️⃣ Não, ainda não foi definido\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, decisão judicial",
+                "2": "Sim, acordo em cartório",
+                "3": "Não foi definido ainda"
+            }
+        },
+        {
+            "chave": "tempo_sem_pagar",
+            "texto": (
+                "Há quanto tempo está sem receber a pensão?\n\n"
+                "1️⃣ Menos de 1 mês\n"
+                "2️⃣ Entre 1 e 3 meses\n"
+                "3️⃣ Entre 3 e 6 meses\n"
+                "4️⃣ Mais de 6 meses\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Menos de 1 mês",
+                "2": "Entre 1 e 3 meses",
+                "3": "Entre 3 e 6 meses",
+                "4": "Mais de 6 meses"
+            }
+        },
+        {
+            "chave": "comprovante_falta_pagamento",
+            "texto": (
+                "Você tem algum comprovante de que não está recebendo "
+                "(extratos, mensagens, transferências antigas)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "filhos_menores",
+            "texto": (
+                "Os filhos que dependem da pensão têm menos de 18 anos?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não, são maiores de 18 (mas ainda dependentes)\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {
+                "1": "Sim, menores de 18 anos",
+                "2": "Não, maiores de 18 anos"
+            }
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
+        },
+    ],
+
+    # ── Direito de Família — Divórcio e separação ─────────────────────────────
+    ("Direito de Família", "divorcio_separacao"): [
+        {
+            "chave": "cidade",
+            "texto": "Em qual cidade você está?"
+        },
+        {
+            "chave": "tipo_uniao",
+            "texto": (
+                "Qual é o tipo de relação?\n\n"
+                "1️⃣ Casamento registrado em cartório\n"
+                "2️⃣ União estável (sem casamento oficial)\n"
+                "3️⃣ Não tenho certeza\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Casamento em cartório",
+                "2": "União estável",
+                "3": "Não tem certeza"
+            }
+        },
+        {
+            "chave": "bens_em_comum",
+            "texto": (
+                "Há bens em comum (casa, carro, conta bancária, empresa)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "filhos_menores",
+            "texto": (
+                "Há filhos menores de 18 anos?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "acordo_entre_partes",
+            "texto": (
+                "As duas partes concordam com o divórcio/separação?\n\n"
+                "1️⃣ Sim, estamos de acordo\n"
+                "2️⃣ Não, há discordância\n"
+                "3️⃣ Ainda não conversamos sobre isso\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, consensual",
+                "2": "Não, litigioso",
+                "3": "Ainda não conversamos"
+            }
+        },
+        {
+            "chave": "processo_aberto",
+            "texto": (
+                "Já existe algum processo judicial em andamento?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
+        },
+    ],
+
+    # ── Direito de Família — Guarda de filhos ─────────────────────────────────
+    ("Direito de Família", "guarda_filhos"): [
+        {
+            "chave": "cidade",
+            "texto": "Em qual cidade você está?"
+        },
+        {
+            "chave": "situacao_atual",
+            "texto": (
+                "Qual é a situação agora?\n\n"
+                "1️⃣ Quero definir a guarda (ainda não foi definida)\n"
+                "2️⃣ Quero mudar a guarda já definida\n"
+                "3️⃣ Estão impedindo minhas visitas\n"
+                "4️⃣ Quero regularizar as visitas\n"
+                "5️⃣ Outro\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Definir a guarda",
+                "2": "Mudar a guarda",
+                "3": "Estão impedindo visitas",
+                "4": "Regularizar visitas",
+                "5": "Outro"
+            }
+        },
+        {
+            "chave": "acordo_guarda",
+            "texto": (
+                "Já existe decisão judicial ou acordo sobre guarda ou visitas?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "idade_crianca",
+            "texto": (
+                "Qual é a faixa de idade da(s) criança(s) envolvida(s)?\n\n"
+                "1️⃣ Até 5 anos\n"
+                "2️⃣ Entre 6 e 12 anos\n"
+                "3️⃣ Entre 13 e 17 anos\n"
+                "4️⃣ 18 anos ou mais\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Até 5 anos",
+                "2": "Entre 6 e 12 anos",
+                "3": "Entre 13 e 17 anos",
+                "4": "18 anos ou mais"
+            }
+        },
+        {
+            "chave": "risco_crianca",
+            "texto": (
+                "A criança corre algum risco de violência ou situação de perigo?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
+        },
+    ],
+
+    # ── Direito de Família — Herança e inventário ─────────────────────────────
+    ("Direito de Família", "heranca_inventario"): [
+        {
+            "chave": "cidade",
+            "texto": "Em qual cidade você está?"
+        },
+        {
+            "chave": "imovel_envolvido",
+            "texto": (
+                "Os bens incluem imóvel (casa, terreno ou apartamento)?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não, só outros bens\n\n"
+                "_Responda com 1 ou 2._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não, só outros bens"}
+        },
+        {
+            "chave": "inventario_aberto",
+            "texto": (
+                "Já foi aberto inventário ou processo de partilha?\n\n"
+                "1️⃣ Sim, já está em andamento\n"
+                "2️⃣ Não foi aberto ainda\n"
+                "3️⃣ Não sei informar\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, inventário em andamento",
+                "2": "Não foi aberto",
+                "3": "Não sabe informar"
+            }
+        },
+        {
+            "chave": "herdeiros_concordam",
+            "texto": (
+                "Os herdeiros estão de acordo sobre a partilha?\n\n"
+                "1️⃣ Sim, há acordo\n"
+                "2️⃣ Não, há disputa\n"
+                "3️⃣ Ainda não conversamos\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {
+                "1": "Sim, há acordo",
+                "2": "Não, há disputa",
+                "3": "Ainda não conversaram"
+            }
+        },
+        {
+            "chave": "testamento",
+            "texto": (
+                "A pessoa falecida deixou testamento?\n\n"
+                "1️⃣ Sim\n"
+                "2️⃣ Não\n"
+                "3️⃣ Não sei\n\n"
+                "_Responda com o número._"
+            ),
+            "opcoes": {"1": "Sim", "2": "Não", "3": "Não sabe"}
+        },
+        {
+            "chave": "info_adicional",
+            "texto": (
+                "Tem mais alguma informação importante que ainda não disse?\n\n"
+                "_Se sim, descreva. Se não, responda \"Não\"._"
+            )
+        },
+    ],
+
+    # ── Direito de Família — Geral (fallback) ─────────────────────────────────
     ("Direito de Família", "familia"): [
+        {
+            "chave": "cidade",
+            "texto": "Em qual cidade você está?"
+        },
         {
             "chave": "tipo_situacao",
             "texto": (
@@ -375,41 +677,6 @@ PERGUNTAS = {
                 "3": "Pensão alimentícia",
                 "4": "Herança ou inventário",
                 "5": "Outro"
-            }
-        },
-        {
-            "chave": "imovel_envolvido",
-            "texto": (
-                "O caso envolve um imóvel (casa, terreno ou apartamento)?\n\n"
-                "1️⃣ Sim\n"
-                "2️⃣ Não\n\n"
-                "_Responda com 1 ou 2._"
-            ),
-            "opcoes": {"1": "Sim", "2": "Não"}
-        },
-        {
-            "chave": "familiar_falecido",
-            "texto": (
-                "O imóvel ou bem pertencia a um familiar que faleceu?\n\n"
-                "1️⃣ Sim\n"
-                "2️⃣ Não\n\n"
-                "_Responda com 1 ou 2._"
-            ),
-            "opcoes": {"1": "Sim", "2": "Não"}
-        },
-        {
-            "chave": "inventario_aberto",
-            "texto": (
-                "Já foi aberto inventário ou processo de partilha dos bens?\n\n"
-                "1️⃣ Sim, já foi aberto\n"
-                "2️⃣ Não foi aberto ainda\n"
-                "3️⃣ Não sei informar\n\n"
-                "_Responda com o número._"
-            ),
-            "opcoes": {
-                "1": "Sim, inventário já aberto",
-                "2": "Não foi aberto",
-                "3": "Não sabe informar"
             }
         },
         {
