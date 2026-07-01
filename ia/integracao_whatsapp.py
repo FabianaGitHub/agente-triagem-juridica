@@ -13,7 +13,9 @@ from banco.banco_dados import (salvar_caso, criar_banco, gerar_id_sequencial,
                                registrar_consentimento, verificar_consentimento,
                                revogar_consentimento, salvar_sessao, obter_sessao,
                                deletar_sessao, criar_advogado, listar_advogados,
-                               buscar_advogado_por_area, atualizar_status_advogado)
+                               buscar_advogado_por_area, atualizar_status_advogado,
+                               registrar_mensagem, listar_conversas,
+                               buscar_conversa_por_numero)
 
 AREAS_JURIDICAS = [
     'Direito do Consumidor',
@@ -227,6 +229,8 @@ def whatsapp_webhook():
         _set_sessao(numero, sessao_nova)
         resposta = _montar_termo(nome_wa)
 
+    registrar_mensagem(numero, 'entrada', mensagem)
+    registrar_mensagem(numero, 'saida', resposta)
     resp.message(resposta)
     return str(resp)
 
@@ -822,6 +826,31 @@ def toggle_advogado(adv_id):
     ativo_str = request.form.get('ativo', '0')
     atualizar_status_advogado(adv_id, ativo_str == '1')
     return redirect(url_for('lista_advogados'))
+
+
+# ── Monitoramento de conversas ────────────────────────────────────────────────
+
+@app.route('/advogados/conversas')
+@requer_login
+def conversas_lista():
+    contatos = listar_conversas()
+    for c in contatos:
+        c['ultima_fmt'] = _formatar_data_web(c['ultima'])
+        c['numero_limpo'] = c['whatsapp'].replace('whatsapp:', '')
+    return render_template('conversas_lista.html', contatos=contatos)
+
+
+@app.route('/advogados/conversas/<path:numero>')
+@requer_login
+def conversa_detalhe(numero):
+    whatsapp_key = numero if numero.startswith('whatsapp:') else f'whatsapp:{numero}'
+    mensagens = buscar_conversa_por_numero(whatsapp_key)
+    for m in mensagens:
+        m['data_fmt'] = _formatar_data_web(m['data_hora'])
+    numero_limpo = whatsapp_key.replace('whatsapp:', '')
+    return render_template('conversa_detalhe.html',
+                           mensagens=mensagens,
+                           numero=numero_limpo)
 
 
 # ── Rota de verificação ───────────────────────────────────────────────────────

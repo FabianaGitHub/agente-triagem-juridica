@@ -137,6 +137,28 @@ def criar_banco():
             )
         """)
 
+    # Tabela de log de mensagens (monitoramento de conversas)
+    if USANDO_POSTGRES:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mensagens (
+                id         SERIAL PRIMARY KEY,
+                whatsapp   TEXT NOT NULL,
+                direcao    TEXT NOT NULL,
+                texto      TEXT NOT NULL,
+                data_hora  TIMESTAMP DEFAULT NOW()
+            )
+        """)
+    else:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mensagens (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                whatsapp   TEXT NOT NULL,
+                direcao    TEXT NOT NULL,
+                texto      TEXT NOT NULL,
+                data_hora  DATETIME DEFAULT (datetime('now','localtime'))
+            )
+        """)
+
     conn.commit()
     conn.close()
     print("[Banco] Inicializado com sucesso.")
@@ -424,6 +446,60 @@ def buscar_advogado_por_area(area):
         if not adv['areas'] or area in adv['areas']:
             return adv
     return None
+
+
+# ── Mensagens (monitoramento de conversas) ───────────────────────────────────
+
+def registrar_mensagem(whatsapp, direcao, texto):
+    """Grava uma mensagem recebida ('entrada') ou enviada ('saida') pelo bot."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    if USANDO_POSTGRES:
+        cursor.execute(
+            "INSERT INTO mensagens (whatsapp, direcao, texto) VALUES (%s, %s, %s)",
+            (whatsapp, direcao, texto)
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO mensagens (whatsapp, direcao, texto) VALUES (?, ?, ?)",
+            (whatsapp, direcao, texto)
+        )
+    conn.commit()
+    conn.close()
+
+
+def listar_conversas():
+    """Retorna um contato por linha com a data da última mensagem, mais recentes primeiro."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT whatsapp, MAX(data_hora) as ultima, COUNT(*) as total
+        FROM mensagens
+        GROUP BY whatsapp
+        ORDER BY ultima DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [{'whatsapp': r[0], 'ultima': r[1], 'total': r[2]} for r in rows]
+
+
+def buscar_conversa_por_numero(whatsapp):
+    """Retorna todas as mensagens de um número em ordem cronológica."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    if USANDO_POSTGRES:
+        cursor.execute(
+            "SELECT direcao, texto, data_hora FROM mensagens WHERE whatsapp = %s ORDER BY data_hora ASC",
+            (whatsapp,)
+        )
+    else:
+        cursor.execute(
+            "SELECT direcao, texto, data_hora FROM mensagens WHERE whatsapp = ? ORDER BY data_hora ASC",
+            (whatsapp,)
+        )
+    rows = cursor.fetchall()
+    conn.close()
+    return [{'direcao': r[0], 'texto': r[1], 'data_hora': r[2]} for r in rows]
 
 
 def atualizar_status_advogado(adv_id, ativo):
