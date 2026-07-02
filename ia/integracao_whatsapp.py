@@ -68,6 +68,11 @@ def _del_sessao(numero):
 # historico[numero][data][area] = quantidade de perguntas
 historico = {}
 
+# ── Modo de teste ────────────────────────────────────────────────────────────
+# MODO_TESTE = True  → sem limite de relatos por dia, comando REINICIAR ativo
+# MODO_TESTE = False → limites normais de produção (alterar aqui após os testes)
+MODO_TESTE = os.environ.get('MODO_TESTE', 'false').lower() == 'true'
+
 # ── Constantes WhatsApp ──────────────────────────────────────────────────────
 LIMITE_AVISO    = 2
 LIMITE_BLOQUEIO = 3
@@ -214,10 +219,12 @@ def whatsapp_webhook():
         if estado != "novo":
             _set_sessao(numero, sessao)
 
-    # Comando de reset para testes — remover antes de produção real
-    if mensagem.strip().upper() == "REINICIAR":
+    # Comando REINICIAR — só disponível em MODO_TESTE
+    if MODO_TESTE and mensagem.strip().upper() == "REINICIAR":
         _del_sessao(numero)
         revogar_consentimento(numero)
+        if numero in historico:
+            del historico[numero]
         resp.message("🔄 Sessão reiniciada. Pode começar uma nova conversa!")
         return str(resp)
 
@@ -262,8 +269,17 @@ _SAUDACOES_RELATO = {
     "ola tudo bem", "oi boa tarde", "oi bom dia", "oi boa noite"
 }
 
+_AGRADECIMENTOS = {
+    "obrigada", "obrigado", "obg", "obgda", "valeu", "muito obrigada",
+    "muito obrigado", "grata", "grato", "agradeço", "agradeco",
+    "obrigada!", "obrigado!", "valeu!", "muito obg", "mt obrigada",
+    "mt obrigado", "thanks", "thank you"
+}
+
 def processar_relato(mensagem, numero):
-    if mensagem.strip().lower() in _SAUDACOES_RELATO:
+    msg = mensagem.strip().lower()
+
+    if msg in _SAUDACOES_RELATO:
         return (
             "Olá! 👋 Sou o assistente jurídico do ACESSUS Direito Popular.\n\n"
             "Estou aqui para ajudar você a entender seus direitos e orientar sobre sua situação jurídica.\n\n"
@@ -271,8 +287,15 @@ def processar_relato(mensagem, numero):
             "pode escrever com suas próprias palavras, sem preocupação com termos jurídicos."
         )
 
+    if msg in _AGRADECIMENTOS:
+        return (
+            "Fico feliz em ter ajudado! 😊\n\n"
+            "Se precisar de mais orientações no futuro, é só me enviar uma mensagem descrevendo sua situação.\n\n"
+            "O ACESSUS Direito Popular está sempre à disposição! 🤝"
+        )
+
     total = total_perguntas_hoje(numero)
-    if total >= LIMITE_BLOQUEIO:
+    if not MODO_TESTE and total >= LIMITE_BLOQUEIO:
         _set_sessao(numero, {
             "estado": "aguardando_escolha",
             "protocolo": "",
@@ -299,8 +322,8 @@ def processar_relato(mensagem, numero):
 
     vezes = registrar_pergunta(numero, area)
 
-    # 2ª pergunta sobre o mesmo tema — resposta reduzida
-    if vezes == LIMITE_AVISO:
+    # 2ª pergunta sobre o mesmo tema — resposta reduzida (desativado em MODO_TESTE)
+    if not MODO_TESTE and vezes == LIMITE_AVISO:
         protocolo = gerar_id_sequencial()
         salvar_caso(
             protocolo=protocolo,
