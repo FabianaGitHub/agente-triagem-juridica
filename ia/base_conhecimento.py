@@ -880,7 +880,8 @@ PROCON_INFO = (
 JEC_INFO = (
     "🏛️ *Juizado Especial Cível (JEC)*\n"
     "Atende causas de até 40 salários mínimos, sem necessidade de advogado.\n"
-    "Procure o Juizado Especial no fórum da sua cidade."
+    "Procure o Juizado Especial no fórum da sua cidade.\n"
+    "Mais informações: www.tjsp.jus.br/JuizadosEspeciais"
 )
 
 ANS_INFO = (
