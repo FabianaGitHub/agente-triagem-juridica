@@ -1,7 +1,5 @@
 flask
 twilio
-spacy
-scikit-learn
 fpdf2
 gunicorn
 psycopg2-binary

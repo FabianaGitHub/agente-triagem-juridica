@@ -1,7 +1,7 @@
 import os
 from datetime import date, datetime
 from functools import wraps
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, unquote_plus
 from flask import (Flask, request, session, redirect,
                    url_for, render_template, send_file)
 from twilio.twiml.messaging_response import MessagingResponse
@@ -48,7 +48,14 @@ ADVOGADOS_SENHA = os.environ.get('ADVOGADOS_SENHA', 'acessus2026')
 def _get_sessao(numero):
     dados = obter_sessao(numero)
     if dados and 'area' in dados and 'sub_area' in dados:
-        dados['perguntas'] = obter_perguntas(dados['area'], dados['sub_area'])
+        # Reconstitui exatamente como iniciar_questionario monta:
+        # pergunta_nome sempre na posição 0, seguida das perguntas da área
+        pergunta_nome = {
+            "chave": "nome_completo",
+            "texto": "Para registrar seu caso, preciso do seu *nome completo*."
+        }
+        perguntas_area = obter_perguntas(dados['area'], dados['sub_area'])
+        dados['perguntas'] = [pergunta_nome] + perguntas_area
     return dados or {}
 
 def _set_sessao(numero, dados):
@@ -193,9 +200,9 @@ def processar_consentimento(mensagem, numero, sessao):
 
 @app.route("/whatsapp", methods=['POST'])
 def whatsapp_webhook():
-    mensagem   = request.values.get('Body', '').strip()
+    mensagem   = unquote_plus(request.values.get('Body', '')).strip()
     numero     = request.values.get('From', '')
-    nome_wa    = request.values.get('ProfileName', '').strip()
+    nome_wa    = unquote_plus(request.values.get('ProfileName', '')).strip()
 
     resp   = MessagingResponse()
     sessao = _get_sessao(numero)
