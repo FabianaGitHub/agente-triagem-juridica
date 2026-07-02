@@ -348,6 +348,13 @@ def processar_resposta_pergunta(mensagem, numero, sessao):
     indice    = sessao["indice_atual"]
     respostas = sessao["respostas"]
 
+    if indice >= len(perguntas):
+        _del_sessao(numero)
+        return (
+            "Houve uma atualização no sistema e sua sessão anterior ficou desatualizada.\n\n"
+            "Por favor, descreva novamente sua situação jurídica para eu te orientar."
+        )
+
     pergunta_atual = perguntas[indice]
     chave          = pergunta_atual["chave"]
     especial       = pergunta_atual.get("especial")
