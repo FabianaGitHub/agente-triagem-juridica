@@ -242,6 +242,8 @@ def whatsapp_webhook():
 
     if estado == "aguardando_consentimento":
         resposta = processar_consentimento(mensagem, numero, sessao)
+    elif estado == "aguardando_esclarecimento":
+        resposta = processar_esclarecimento(mensagem, numero, sessao)
     elif estado == "fazendo_perguntas":
         resposta = processar_resposta_pergunta(mensagem, numero, sessao)
     elif estado == "aguardando_escolha":
@@ -320,6 +322,28 @@ def processar_relato(mensagem, numero):
     sub_area   = resultado.get("sub_area", "indefinida")
     prioridade = resultado.get("prioridade", 3)
 
+    # Área não identificada → pergunta o tema antes de mostrar opções genéricas
+    if area == "Indefinida":
+        sessao_atual = _get_sessao(numero)
+        _set_sessao(numero, {
+            "estado": "aguardando_esclarecimento",
+            "relato_original": mensagem,
+            "prioridade": prioridade,
+            "nome_whatsapp": sessao_atual.get('nome_whatsapp', '')
+        })
+        return (
+            "Recebi seu relato! Para te orientar corretamente, "
+            "preciso entender melhor o tema.\n\n"
+            "Sua situação é sobre qual dessas áreas?\n\n"
+            "1️⃣ Banco ou finanças (conta, cartão, empréstimo, PIX)\n"
+            "2️⃣ Trabalho (demissão, salário, FGTS)\n"
+            "3️⃣ Compra ou serviço (produto, loja, internet)\n"
+            "4️⃣ Família (pensão, guarda, divórcio)\n"
+            "5️⃣ INSS ou previdência\n"
+            "6️⃣ Outro assunto\n\n"
+            "_Responda com o número correspondente._"
+        )
+
     vezes = registrar_pergunta(numero, area)
 
     # 2ª pergunta sobre o mesmo tema — resposta reduzida (desativado em MODO_TESTE)
@@ -355,6 +379,38 @@ def processar_relato(mensagem, numero):
     return iniciar_questionario(area, sub_area, mensagem, numero, prioridade)
 
 
+# ── Esclarecimento de área (quando não identificada automaticamente) ──────────
+
+_MAPA_ESCLARECIMENTO = {
+    "1": ("Direito Bancário",      "bancario",        2),
+    "2": ("Direito Trabalhista",   "trabalhista",     2),
+    "3": ("Direito do Consumidor", "consumidor_geral", 3),
+    "4": ("Direito de Família",    "familia",         2),
+    "5": ("Previdência Social",    "inss",            2),
+}
+
+def processar_esclarecimento(mensagem, numero, sessao):
+    escolha = mensagem.strip()
+    relato  = sessao.get("relato_original", mensagem)
+
+    if escolha in _MAPA_ESCLARECIMENTO:
+        area, sub_area, prioridade = _MAPA_ESCLARECIMENTO[escolha]
+        registrar_pergunta(numero, area)
+        return iniciar_questionario(area, sub_area, relato, numero, prioridade)
+
+    # Opção 6 ou resposta não reconhecida → opções genéricas
+    _set_sessao(numero, {
+        "estado": "aguardando_escolha",
+        "protocolo": "",
+        "area": "Indefinida",
+        "sub_area": "indefinida",
+        "opcoes": ["advogado", "procon", "cejusc", "jec"],
+        "respostas": {},
+        "nome_whatsapp": sessao.get('nome_whatsapp', '')
+    })
+    return _opcoes_indefinida()
+
+
 # ── Questionário ──────────────────────────────────────────────────────────────
 
 def iniciar_questionario(area, sub_area, relato, numero, prioridade):
@@ -383,13 +439,6 @@ def iniciar_questionario(area, sub_area, relato, numero, prioridade):
 
     if not perguntas:
         return finalizar_questionario(numero, sessao_nova)
-
-    if area == "Indefinida":
-        return (
-            "Recebi seu relato, mas não consegui identificar com clareza "
-            "a área jurídica.\n\n"
-            + _opcoes_indefinida()
-        )
 
     return (
         f"Entendo, seu caso envolve *{area}*.\n\n"
