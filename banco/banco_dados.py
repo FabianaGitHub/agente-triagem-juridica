@@ -159,6 +159,21 @@ def criar_banco():
             )
         """)
 
+    # Tabela de sugestões de keywords (aprendizado supervisionado)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sugestoes_keywords (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            frase     TEXT NOT NULL,
+            area      TEXT NOT NULL,
+            sub_area  TEXT NOT NULL,
+            contagem  INTEGER DEFAULT 1,
+            aprovada  INTEGER DEFAULT 0,
+            ignorada  INTEGER DEFAULT 0,
+            data_hora DATETIME DEFAULT (datetime('now','localtime')),
+            UNIQUE(frase, sub_area)
+        )
+    """)
+
     conn.commit()
     conn.close()
     print("[Banco] Inicializado com sucesso.")
@@ -500,6 +515,78 @@ def buscar_conversa_por_numero(whatsapp):
     rows = cursor.fetchall()
     conn.close()
     return [{'direcao': r[0], 'texto': r[1], 'data_hora': r[2]} for r in rows]
+
+
+# ── Sugestões de keywords (aprendizado supervisionado) ───────────────────────
+
+def registrar_sugestao(frase, area, sub_area):
+    """Salva sugestão de keyword ou incrementa contador se já existir."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO sugestoes_keywords (frase, area, sub_area, contagem)
+        VALUES (?, ?, ?, 1)
+        ON CONFLICT(frase, sub_area) DO UPDATE SET contagem = contagem + 1
+        WHERE aprovada = 0 AND ignorada = 0
+    """, (frase.lower().strip(), area, sub_area))
+    conn.commit()
+    conn.close()
+
+
+def listar_sugestoes_pendentes():
+    """Retorna sugestões ainda não avaliadas, ordenadas por frequência."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, frase, area, sub_area, contagem, data_hora
+        FROM sugestoes_keywords
+        WHERE aprovada = 0 AND ignorada = 0
+        ORDER BY contagem DESC, data_hora DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [{'id': r[0], 'frase': r[1], 'area': r[2],
+             'sub_area': r[3], 'contagem': r[4], 'data_hora': r[5]}
+            for r in rows]
+
+
+def listar_keywords_aprovadas():
+    """Retorna keywords aprovadas para o motor de decisão carregar."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT frase, area, sub_area
+        FROM sugestoes_keywords
+        WHERE aprovada = 1
+        ORDER BY area, frase
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [{'frase': r[0], 'area': r[1], 'sub_area': r[2]} for r in rows]
+
+
+def aprovar_sugestao(sugestao_id):
+    """Marca sugestão como aprovada."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE sugestoes_keywords SET aprovada = 1 WHERE id = ?",
+        (sugestao_id,)
+    )
+    conn.commit()
+    conn.close()
+
+
+def ignorar_sugestao(sugestao_id):
+    """Marca sugestão como ignorada."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE sugestoes_keywords SET ignorada = 1 WHERE id = ?",
+        (sugestao_id,)
+    )
+    conn.commit()
+    conn.close()
 
 
 def atualizar_status_advogado(adv_id, ativo):

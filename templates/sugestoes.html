@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block titulo %}Sugestões de Keywords{% endblock %}
+{% block conteudo %}
+<div class="row g-0">
+
+  <!-- Sidebar -->
+  <div class="col-md-3 col-lg-2 sidebar p-3">
+    <div class="secao-header">Menu</div>
+    <a href="/advogados" class="filtro-link mb-1">
+      <i class="bi bi-folder2-open me-1"></i>Casos
+    </a>
+    <a href="/advogados/conversas" class="filtro-link mb-1">
+      <i class="bi bi-chat-dots me-1"></i>Conversas
+    </a>
+    <a href="/advogados/sugestoes" class="filtro-link ativo mb-1">
+      <i class="bi bi-lightbulb me-1"></i>Sugestões
+    </a>
+    <a href="/advogados/lista" class="filtro-link mb-1">
+      <i class="bi bi-person-badge me-1"></i>Advogados
+    </a>
+    <a href="/advogados/cadastrar" class="filtro-link">
+      <i class="bi bi-person-plus me-1"></i>Cadastrar advogado
+    </a>
+  </div>
+
+  <!-- Conteúdo -->
+  <div class="col-md-9 col-lg-10 p-4">
+
+    <!-- Pendentes -->
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3 py-2 rounded"
+         style="background: linear-gradient(90deg, #000000 0%, #0d2855 100%);">
+      <h5 class="fw-bold mb-0 text-white" style="font-size:.95rem; letter-spacing:.04em;">
+        <i class="bi bi-lightbulb me-2"></i>SUGESTÕES PENDENTES
+      </h5>
+      <span class="badge bg-light text-dark rounded-pill">{{ pendentes|length }} pendente(s)</span>
+    </div>
+
+    {% if pendentes %}
+      <p class="text-muted small mb-3">
+        Frases enviadas por usuários que o bot não reconheceu. Aprove para ativar como keyword,
+        ou ignore para descartar. As aprovadas entram em vigor imediatamente.
+      </p>
+      <div class="table-responsive mb-5">
+        <table class="table table-bordered table-hover align-middle bg-white shadow-sm">
+          <thead style="background:#f8f9fa; font-size:.85rem;">
+            <tr>
+              <th>Frase enviada pelo usuário</th>
+              <th>Área escolhida</th>
+              <th class="text-center">Vezes</th>
+              <th>Primeira vez</th>
+              <th class="text-center">Ação</th>
+            </tr>
+          </thead>
+          <tbody style="font-size:.88rem;">
+            {% for s in pendentes %}
+            <tr>
+              <td><code>{{ s.frase }}</code></td>
+              <td>
+                <span class="badge rounded-pill" style="background:#0d2855;">{{ s.area }}</span>
+              </td>
+              <td class="text-center fw-bold">{{ s.contagem }}</td>
+              <td class="text-muted">{{ s.data_fmt }}</td>
+              <td class="text-center">
+                <form method="POST" action="/advogados/sugestoes/aprovar/{{ s.id }}" class="d-inline">
+                  <button class="btn btn-sm btn-success" title="Ativar como keyword">
+                    <i class="bi bi-check-lg me-1"></i>Aprovar
+                  </button>
+                </form>
+                <form method="POST" action="/advogados/sugestoes/ignorar/{{ s.id }}" class="d-inline ms-1">
+                  <button class="btn btn-sm btn-outline-secondary" title="Descartar sugestão">
+                    <i class="bi bi-x-lg me-1"></i>Ignorar
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted mb-5">
+        <i class="bi bi-check-circle d-block mb-2" style="font-size:2rem; color:#198754;"></i>
+        Nenhuma sugestão pendente. Quando usuários usarem a pergunta de esclarecimento, as frases aparecerão aqui.
+      </div>
+    {% endif %}
+
+    <!-- Keywords aprovadas -->
+    <div class="d-flex justify-content-between align-items-center mb-3 px-3 py-2 rounded"
+         style="background: linear-gradient(90deg, #000000 0%, #0d2855 100%);">
+      <h5 class="fw-bold mb-0 text-white" style="font-size:.95rem; letter-spacing:.04em;">
+        <i class="bi bi-check2-all me-2"></i>KEYWORDS ATIVAS (APROVADAS)
+      </h5>
+      <span class="badge bg-light text-dark rounded-pill">{{ aprovadas|length }} ativa(s)</span>
+    </div>
+
+    {% if aprovadas %}
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered bg-white shadow-sm">
+          <thead style="background:#f8f9fa; font-size:.82rem;">
+            <tr>
+              <th>Frase</th>
+              <th>Área</th>
+            </tr>
+          </thead>
+          <tbody style="font-size:.85rem;">
+            {% for k in aprovadas %}
+            <tr>
+              <td><code>{{ k.frase }}</code></td>
+              <td>{{ k.area }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted small">Nenhuma keyword aprovada ainda.</p>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

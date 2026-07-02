@@ -1,7 +1,9 @@
 class MotorDecisaoJuridica:
 
     def __init__(self):
+        self._extras_carregados = False
         # Sub-áreas específicas de Consumidor vêm antes do genérico
+
         self.regras = {
             "plano_saude": {
                 "palavras": ["plano de saúde", "plano de saude", "operadora", "convênio médico",
@@ -144,6 +146,7 @@ class MotorDecisaoJuridica:
                 "acao_sugerida": "Verifique no Meu INSS ou procure um advogado."
             }
         }
+        self._carregar_extras()
 
     def analisar(self, relato):
         texto = relato.lower()
@@ -177,4 +180,22 @@ class MotorDecisaoJuridica:
         }
 
 
-agente_decisao = MotorDecisaoJuridica()
+    def _carregar_extras(self):
+        """Adiciona keywords aprovadas no painel às regras existentes. Seguro chamar múltiplas vezes."""
+        try:
+            from banco.banco_dados import listar_keywords_aprovadas
+            for item in listar_keywords_aprovadas():
+                frase = item['frase'].lower()
+                sub_area = item['sub_area']
+                for regra in self.regras.values():
+                    if regra['sub_area'] == sub_area and frase not in regra['palavras']:
+                        regra['palavras'].append(frase)
+            self._extras_carregados = True
+        except Exception:
+            pass
+
+    def recarregar_extras(self):
+        """Chamado após aprovação no painel — aplica imediatamente sem restart."""
+        self._carregar_extras()
+
+

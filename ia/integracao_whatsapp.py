@@ -15,7 +15,10 @@ from banco.banco_dados import (salvar_caso, criar_banco, gerar_id_sequencial,
                                deletar_sessao, criar_advogado, listar_advogados,
                                buscar_advogado_por_area, atualizar_status_advogado,
                                registrar_mensagem, listar_conversas,
-                               buscar_conversa_por_numero)
+                               buscar_conversa_por_numero,
+                               registrar_sugestao, listar_sugestoes_pendentes,
+                               listar_keywords_aprovadas, aprovar_sugestao,
+                               ignorar_sugestao)
 
 AREAS_JURIDICAS = [
     'Direito do Consumidor',
@@ -395,6 +398,12 @@ def processar_esclarecimento(mensagem, numero, sessao):
 
     if escolha in _MAPA_ESCLARECIMENTO:
         area, sub_area, prioridade = _MAPA_ESCLARECIMENTO[escolha]
+        # Salva frase original como sugestão de keyword para revisão no painel
+        if len(relato.strip()) >= 5:
+            try:
+                registrar_sugestao(relato.strip(), area, sub_area)
+            except Exception:
+                pass
         registrar_pergunta(numero, area)
         return iniciar_questionario(area, sub_area, relato, numero, prioridade)
 
@@ -963,6 +972,33 @@ def conversa_detalhe(numero):
     return render_template('conversa_detalhe.html',
                            mensagens=mensagens,
                            numero=numero_limpo)
+
+
+# ── Sugestões de keywords ─────────────────────────────────────────────────────
+
+@app.route('/advogados/sugestoes')
+@requer_login
+def sugestoes_lista():
+    pendentes = listar_sugestoes_pendentes()
+    aprovadas = listar_keywords_aprovadas()
+    for s in pendentes:
+        s['data_fmt'] = _formatar_data_web(s['data_hora'])
+    return render_template('sugestoes.html', pendentes=pendentes, aprovadas=aprovadas)
+
+
+@app.route('/advogados/sugestoes/aprovar/<int:sugestao_id>', methods=['POST'])
+@requer_login
+def sugestoes_aprovar(sugestao_id):
+    aprovar_sugestao(sugestao_id)
+    motor.recarregar_extras()
+    return redirect('/advogados/sugestoes')
+
+
+@app.route('/advogados/sugestoes/ignorar/<int:sugestao_id>', methods=['POST'])
+@requer_login
+def sugestoes_ignorar(sugestao_id):
+    ignorar_sugestao(sugestao_id)
+    return redirect('/advogados/sugestoes')
 
 
 # ── Rota de verificação ───────────────────────────────────────────────────────
