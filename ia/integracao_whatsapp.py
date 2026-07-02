@@ -221,6 +221,18 @@ def whatsapp_webhook():
         resp.message("🔄 Sessão reiniciada. Pode começar uma nova conversa!")
         return str(resp)
 
+    # Cancelar/Sair reseta a sessão em qualquer estado
+    _CANCELAR = {"cancelar", "sair", "cancel", "parar", "pare", "encerrar", "encerramento", "voltar"}
+    if mensagem.strip().lower() in _CANCELAR:
+        _del_sessao(numero)
+        resp.message(
+            "Tudo bem! Sua sessão foi encerrada.\n\n"
+            "Quando quiser, é só me enviar uma nova mensagem descrevendo sua situação jurídica. 😊"
+        )
+        registrar_mensagem(numero, 'entrada', mensagem)
+        registrar_mensagem(numero, 'saida', "Sessão encerrada pelo usuário.")
+        return str(resp)
+
     if estado == "aguardando_consentimento":
         resposta = processar_consentimento(mensagem, numero, sessao)
     elif estado == "fazendo_perguntas":
@@ -244,7 +256,21 @@ def whatsapp_webhook():
 
 # ── Processamento do relato ───────────────────────────────────────────────────
 
+_SAUDACOES_RELATO = {
+    "oi", "olá", "ola", "bom dia", "boa tarde", "boa noite",
+    "hey", "hi", "hello", "tudo bem", "tudo bom", "oi tudo bem",
+    "ola tudo bem", "oi boa tarde", "oi bom dia", "oi boa noite"
+}
+
 def processar_relato(mensagem, numero):
+    if mensagem.strip().lower() in _SAUDACOES_RELATO:
+        return (
+            "Olá! 👋 Sou o assistente jurídico do ACESSUS Direito Popular.\n\n"
+            "Estou aqui para ajudar você a entender seus direitos e orientar sobre sua situação jurídica.\n\n"
+            "Por favor, me descreva brevemente o que está acontecendo — "
+            "pode escrever com suas próprias palavras, sem preocupação com termos jurídicos."
+        )
+
     total = total_perguntas_hoje(numero)
     if total >= LIMITE_BLOQUEIO:
         _set_sessao(numero, {
