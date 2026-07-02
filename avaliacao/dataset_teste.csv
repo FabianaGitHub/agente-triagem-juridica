@@ -1,0 +1,89 @@
+id,relato,area_correta,sub_area_correta,dificuldade,origem
+1,"Meu plano de saúde negou a cirurgia que eu preciso fazer urgente",Direito do Consumidor,plano_saude,facil,simulado
+2,"A operadora não autorizou meu exame de ressonância",Direito do Consumidor,plano_saude,facil,simulado
+3,"Convênio médico recusou internação da minha mãe",Direito do Consumidor,plano_saude,facil,simulado
+4,"Pago plano de saude todo mes e quando preciso eles nao cobrem nada",Direito do Consumidor,plano_saude,medio,simulado
+5,"Tentei marcar uma consulta pelo convenio e falaram que nao tem cobertura",Direito do Consumidor,plano_saude,medio,simulado
+6,"O plano só autorizou depois que eu ameacei processar",Direito do Consumidor,plano_saude,medio,simulado
+7,"Minha filha tá doente e a empresa do seguro saude inventou desculpa pra nao pagar o tratamento",Direito do Consumidor,plano_saude,dificil,simulado
+8,"Preciso de um remedio caro e falaram que não está incluso, mas eu pago certinho",Direito do Consumidor,plano_saude,dificil,simulado
+9,"Fui cobrado indevidamente numa fatura que ja tinha cancelado",Direito do Consumidor,cobranca_indevida,facil,simulado
+10,"Cobraram um valor que eu nunca contratei no cartao",Direito do Consumidor,cobranca_indevida,facil,simulado
+11,"Taxa indevida apareceu na minha conta do banco",Direito do Consumidor,cobranca_indevida,facil,simulado
+12,"Continuo pagando uma assinatura que pedi pra cancelar tres meses atras",Direito do Consumidor,cobranca_indevida,medio,simulado
+13,"Apareceu uma cobrança duplicada no meu boleto esse mes",Direito do Consumidor,cobranca_indevida,medio,simulado
+14,"Todo mês some um dinheiro da minha conta e eu não sei de onde vem",Direito do Consumidor,cobranca_indevida,dificil,simulado
+15,"A empresa fica me cobrando coisa que eu não pedi",Direito do Consumidor,cobranca_indevida,dificil,simulado
+16,"Comprei um celular e ate agora nao chegou",Direito do Consumidor,produto_nao_entregue,facil,simulado
+17,"Paguei por um serviço de reforma que nunca foi feito",Direito do Consumidor,produto_nao_entregue,facil,simulado
+18,"Produto nao chegou no prazo combinado pela loja",Direito do Consumidor,produto_nao_entregue,facil,simulado
+19,"Fiz um pedido faz duas semanas e a entrega ainda nao apareceu",Direito do Consumidor,produto_nao_entregue,medio,simulado
+20,"Paguei a empresa pra instalar um ar condicionado e sumiram",Direito do Consumidor,produto_nao_entregue,medio,simulado
+21,"Dei o dinheiro pro cara fazer um serviço em casa e ele nunca mais apareceu",Direito do Consumidor,produto_nao_entregue,dificil,simulado
+22,"Comprei pela internet e o site nem responde mais",Direito do Consumidor,produto_nao_entregue,dificil,simulado
+23,"Comprei uma geladeira com defeito de fabrica",Direito do Consumidor,consumidor_geral,facil,simulado
+24,"A loja não quer trocar um produto na garantia",Direito do Consumidor,consumidor_geral,facil,simulado
+25,"Fui enganado por uma propaganda de um produto",Direito do Consumidor,consumidor_geral,facil,simulado
+26,"O vendedor me prometeu uma coisa e me vendeu outra completamente diferente",Direito do Consumidor,consumidor_geral,medio,simulado
+27,"Não consigo cancelar um contrato de internet de jeito nenhum",Direito do Consumidor,consumidor_geral,medio,simulado
+28,"Sinto que fui enrolado numa compra e não sei o que fazer",Direito do Consumidor,consumidor_geral,dificil,simulado
+29,"A empresa não cumpre o que prometeu e ninguém me ajuda",Direito do Consumidor,consumidor_geral,dificil,simulado
+30,"Fui demitido sem justa causa e não recebi nada",Direito Trabalhista,trabalhista,facil,simulado
+31,"Meu patrão não paga hora extra",Direito Trabalhista,trabalhista,facil,simulado
+32,"Trabalho registrado mas o salario está atrasado",Direito Trabalhista,trabalhista,facil,simulado
+33,"Sai da empresa e ate agora nao acertaram minhas contas",Direito Trabalhista,trabalhista,medio,simulado
+34,"Sofro assedio do meu chefe todos os dias",Direito Trabalhista,trabalhista,medio,simulado
+35,"Me mandaram embora sem avisar nada e fiquei sem chao",Direito Trabalhista,trabalhista,dificil,simulado
+36,"Trabalhei la anos e na hora de sair nao quiseram me pagar direito",Direito Trabalhista,trabalhista,dificil,simulado
+37,"Meu nome foi negativado mas eu nunca devi nada pro banco",Direito Bancário,bancario,facil,simulado
+38,"Caiu um emprestimo na minha conta que eu nao pedi",Direito Bancário,bancario,facil,simulado
+39,"Fui vitima de fraude no meu cartao de credito",Direito Bancário,bancario,facil,simulado
+40,"O banco está cobrando juros muito acima do combinado",Direito Bancário,bancario,medio,simulado
+41,"Apareceu um desconto no meu salario que eu nunca autorizei",Direito Bancário,bancario,medio,simulado
+42,"Alguem usou meus dados e fez um pix que eu nao reconheço",Direito Bancário,bancario,dificil,simulado
+43,"Meu nome ficou sujo sem eu nem saber o motivo",Direito Bancário,bancario,dificil,simulado
+44,"O pai do meu filho está sem pagar pensão há 5 meses",Direito de Família,pensao_alimenticia,facil,simulado
+45,"Minha ex parou de pagar a pensão alimentícia da nossa filha",Direito de Família,pensao_alimenticia,facil,simulado
+46,"Preciso cobrar pensão atrasada do pai das crianças",Direito de Família,pensao_alimenticia,facil,simulado
+47,"Meu ex-marido sumiu e não manda mais nada pros filhos",Direito de Família,pensao_alimenticia,medio,simulado
+48,"O juiz já definiu o valor mas ele não deposita",Direito de Família,pensao_alimenticia,medio,simulado
+49,"Meu marido foi embora e não ajuda mais com as despesas dos meus filhos",Direito de Família,pensao_alimenticia,dificil,simulado
+50,"Ele disse que não vai mais mandar dinheiro nenhum pra criança",Direito de Família,pensao_alimenticia,dificil,simulado
+51,"Quero entrar com pedido de divórcio do meu marido",Direito de Família,divorcio_separacao,facil,simulado
+52,"Estou me separando e preciso saber meus direitos",Direito de Família,divorcio_separacao,facil,simulado
+53,"Meu casamento acabou e quero formalizar",Direito de Família,divorcio_separacao,facil,simulado
+54,"Nao moramos mais juntos faz um ano mas nunca separamos no papel",Direito de Família,divorcio_separacao,medio,simulado
+55,"Quero terminar o casamento mas ele nao concorda",Direito de Família,divorcio_separacao,medio,simulado
+56,"A gente nao se entende mais e quero seguir minha vida sozinha",Direito de Família,divorcio_separacao,dificil,simulado
+57,"Cansei dessa relação e quero saber como faço pra sair legalmente",Direito de Família,divorcio_separacao,dificil,simulado
+58,"Quero pedir a guarda do meu filho",Direito de Família,guarda_filhos,facil,simulado
+59,"O pai está impedindo minhas visitas à minha filha",Direito de Família,guarda_filhos,facil,simulado
+60,"Preciso regularizar a guarda compartilhada",Direito de Família,guarda_filhos,facil,simulado
+61,"Minha ex não deixa eu ver meu filho nos finais de semana",Direito de Família,guarda_filhos,medio,simulado
+62,"Quero mudar quem fica com a guarda das crianças",Direito de Família,guarda_filhos,medio,simulado
+63,"Faz meses que não consigo ver meus filhos por causa dela",Direito de Família,guarda_filhos,dificil,simulado
+64,"Ele leva a criança e não devolve no dia combinado",Direito de Família,guarda_filhos,dificil,simulado
+65,"Meu pai faleceu e precisamos abrir inventário",Direito de Família,heranca_inventario,facil,simulado
+66,"Há uma casa de herança que precisa ser partilhada",Direito de Família,heranca_inventario,facil,simulado
+67,"Minha avó morreu e deixou bens para os netos",Direito de Família,heranca_inventario,facil,simulado
+68,"A familia está brigando pela partilha dos bens do meu tio",Direito de Família,heranca_inventario,medio,simulado
+69,"Não sei como proceder com os bens que meu pai deixou",Direito de Família,heranca_inventario,medio,simulado
+70,"Minha mãe se foi e ninguém sabe o que fazer com a casa dela",Direito de Família,heranca_inventario,dificil,simulado
+71,"Tem um terreno de família parado desde que meu avô morreu",Direito de Família,heranca_inventario,dificil,simulado
+72,"Quero saber sobre direitos de família",Direito de Família,familia,facil,simulado
+73,"Preciso de orientação sobre um problema familiar",Direito de Família,familia,facil,simulado
+74,"Tenho uma situação complicada com meu ex-companheiro",Direito de Família,familia,medio,simulado
+75,"Minha família está em conflito e não sei a quem recorrer",Direito de Família,familia,dificil,simulado
+76,"O INSS negou meu pedido de aposentadoria",Previdência Social,inss,facil,simulado
+77,"Meu auxílio-doença foi cancelado sem explicação",Previdência Social,inss,facil,simulado
+78,"Preciso entrar com pedido de BPC/LOAS",Previdência Social,inss,facil,simulado
+79,"Fiz a pericia do INSS e ainda nao saiu resultado",Previdência Social,inss,medio,simulado
+80,"Não recebo mais o benefício e não entendo o motivo",Previdência Social,inss,medio,simulado
+81,"Fiquei impossibilitada de trabalhar e o governo não me ajuda",Previdência Social,inss,dificil,simulado
+82,"Parei de receber o dinheiro que me ajudava todo mês",Previdência Social,inss,dificil,simulado
+83,"Oi, bom dia",Indefinida,indefinida,dificil,simulado
+84,"Preciso de ajuda",Indefinida,indefinida,dificil,simulado
+85,"Vocês fazem o que mesmo?",Indefinida,indefinida,dificil,simulado
+86,"Quero falar com advogado",Indefinida,indefinida,dificil,simulado
+87,"Tenho um problema, pode me ajudar?",Indefinida,indefinida,dificil,simulado
+88,"Fui demitido sem justa causa",Direito Trabalhista,trabalhista,facil,real

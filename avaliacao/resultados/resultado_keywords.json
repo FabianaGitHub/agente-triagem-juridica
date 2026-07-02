@@ -1,0 +1,416 @@
+{
+  "classificador": "palavras-chave",
+  "data": "2026-06-30T14:27:27.732158",
+  "total_casos": 88,
+  "total_erros": 45,
+  "relatorio": {
+    "bancario": {
+      "precision": 0.8,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.6666666666666666,
+      "support": 7.0
+    },
+    "cobranca_indevida": {
+      "precision": 1.0,
+      "recall": 0.2857142857142857,
+      "f1-score": 0.4444444444444444,
+      "support": 7.0
+    },
+    "consumidor_geral": {
+      "precision": 0.5714285714285714,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.5714285714285714,
+      "support": 7.0
+    },
+    "divorcio_separacao": {
+      "precision": 1.0,
+      "recall": 0.42857142857142855,
+      "f1-score": 0.6,
+      "support": 7.0
+    },
+    "familia": {
+      "precision": 0.23076923076923078,
+      "recall": 0.75,
+      "f1-score": 0.35294117647058826,
+      "support": 4.0
+    },
+    "guarda_filhos": {
+      "precision": 1.0,
+      "recall": 0.42857142857142855,
+      "f1-score": 0.6,
+      "support": 7.0
+    },
+    "heranca_inventario": {
+      "precision": 0.8,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.6666666666666666,
+      "support": 7.0
+    },
+    "indefinida": {
+      "precision": 0.14705882352941177,
+      "recall": 1.0,
+      "f1-score": 0.2564102564102564,
+      "support": 5.0
+    },
+    "inss": {
+      "precision": 1.0,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.7272727272727273,
+      "support": 7.0
+    },
+    "pensao_alimenticia": {
+      "precision": 1.0,
+      "recall": 0.42857142857142855,
+      "f1-score": 0.6,
+      "support": 7.0
+    },
+    "plano_saude": {
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1-score": 0.6666666666666666,
+      "support": 8.0
+    },
+    "produto_nao_entregue": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 7.0
+    },
+    "trabalhista": {
+      "precision": 0.8,
+      "recall": 0.5,
+      "f1-score": 0.6153846153846154,
+      "support": 8.0
+    },
+    "accuracy": 0.48863636363636365,
+    "macro avg": {
+      "precision": 0.7191735865944011,
+      "recall": 0.5082417582417583,
+      "f1-score": 0.5206062916470156,
+      "support": 88.0
+    },
+    "weighted avg": {
+      "precision": 0.7529360345536816,
+      "recall": 0.48863636363636365,
+      "f1-score": 0.5350634065874708,
+      "support": 88.0
+    }
+  },
+  "erros": [
+    {
+      "id": "5",
+      "relato": "Tentei marcar uma consulta pelo convenio e falaram que nao tem cobertura",
+      "esperado": "plano_saude",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "6",
+      "relato": "O plano só autorizou depois que eu ameacei processar",
+      "esperado": "plano_saude",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "7",
+      "relato": "Minha filha tá doente e a empresa do seguro saude inventou desculpa pra nao pagar o tratamento",
+      "esperado": "plano_saude",
+      "previsto": "familia",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "8",
+      "relato": "Preciso de um remedio caro e falaram que não está incluso, mas eu pago certinho",
+      "esperado": "plano_saude",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "10",
+      "relato": "Cobraram um valor que eu nunca contratei no cartao",
+      "esperado": "cobranca_indevida",
+      "previsto": "bancario",
+      "dificuldade": "facil"
+    },
+    {
+      "id": "12",
+      "relato": "Continuo pagando uma assinatura que pedi pra cancelar tres meses atras",
+      "esperado": "cobranca_indevida",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "13",
+      "relato": "Apareceu uma cobrança duplicada no meu boleto esse mes",
+      "esperado": "cobranca_indevida",
+      "previsto": "consumidor_geral",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "14",
+      "relato": "Todo mês some um dinheiro da minha conta e eu não sei de onde vem",
+      "esperado": "cobranca_indevida",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "15",
+      "relato": "A empresa fica me cobrando coisa que eu não pedi",
+      "esperado": "cobranca_indevida",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "16",
+      "relato": "Comprei um celular e ate agora nao chegou",
+      "esperado": "produto_nao_entregue",
+      "previsto": "indefinida",
+      "dificuldade": "facil"
+    },
+    {
+      "id": "17",
+      "relato": "Paguei por um serviço de reforma que nunca foi feito",
+      "esperado": "produto_nao_entregue",
+      "previsto": "indefinida",
+      "dificuldade": "facil"
+    },
+    {
+      "id": "18",
+      "relato": "Produto nao chegou no prazo combinado pela loja",
+      "esperado": "produto_nao_entregue",
+      "previsto": "consumidor_geral",
+      "dificuldade": "facil"
+    },
+    {
+      "id": "19",
+      "relato": "Fiz um pedido faz duas semanas e a entrega ainda nao apareceu",
+      "esperado": "produto_nao_entregue",
+      "previsto": "consumidor_geral",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "20",
+      "relato": "Paguei a empresa pra instalar um ar condicionado e sumiram",
+      "esperado": "produto_nao_entregue",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "21",
+      "relato": "Dei o dinheiro pro cara fazer um serviço em casa e ele nunca mais apareceu",
+      "esperado": "produto_nao_entregue",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "22",
+      "relato": "Comprei pela internet e o site nem responde mais",
+      "esperado": "produto_nao_entregue",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "26",
+      "relato": "O vendedor me prometeu uma coisa e me vendeu outra completamente diferente",
+      "esperado": "consumidor_geral",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "27",
+      "relato": "Não consigo cancelar um contrato de internet de jeito nenhum",
+      "esperado": "consumidor_geral",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "29",
+      "relato": "A empresa não cumpre o que prometeu e ninguém me ajuda",
+      "esperado": "consumidor_geral",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "33",
+      "relato": "Sai da empresa e ate agora nao acertaram minhas contas",
+      "esperado": "trabalhista",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "34",
+      "relato": "Sofro assedio do meu chefe todos os dias",
+      "esperado": "trabalhista",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "35",
+      "relato": "Me mandaram embora sem avisar nada e fiquei sem chao",
+      "esperado": "trabalhista",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "36",
+      "relato": "Trabalhei la anos e na hora de sair nao quiseram me pagar direito",
+      "esperado": "trabalhista",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "41",
+      "relato": "Apareceu um desconto no meu salario que eu nunca autorizei",
+      "esperado": "bancario",
+      "previsto": "trabalhista",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "42",
+      "relato": "Alguem usou meus dados e fez um pix que eu nao reconheço",
+      "esperado": "bancario",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "43",
+      "relato": "Meu nome ficou sujo sem eu nem saber o motivo",
+      "esperado": "bancario",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "47",
+      "relato": "Meu ex-marido sumiu e não manda mais nada pros filhos",
+      "esperado": "pensao_alimenticia",
+      "previsto": "familia",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "48",
+      "relato": "O juiz já definiu o valor mas ele não deposita",
+      "esperado": "pensao_alimenticia",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "49",
+      "relato": "Meu marido foi embora e não ajuda mais com as despesas dos meus filhos",
+      "esperado": "pensao_alimenticia",
+      "previsto": "familia",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "50",
+      "relato": "Ele disse que não vai mais mandar dinheiro nenhum pra criança",
+      "esperado": "pensao_alimenticia",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "54",
+      "relato": "Nao moramos mais juntos faz um ano mas nunca separamos no papel",
+      "esperado": "divorcio_separacao",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "55",
+      "relato": "Quero terminar o casamento mas ele nao concorda",
+      "esperado": "divorcio_separacao",
+      "previsto": "familia",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "56",
+      "relato": "A gente nao se entende mais e quero seguir minha vida sozinha",
+      "esperado": "divorcio_separacao",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "57",
+      "relato": "Cansei dessa relação e quero saber como faço pra sair legalmente",
+      "esperado": "divorcio_separacao",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "59",
+      "relato": "O pai está impedindo minhas visitas à minha filha",
+      "esperado": "guarda_filhos",
+      "previsto": "familia",
+      "dificuldade": "facil"
+    },
+    {
+      "id": "61",
+      "relato": "Minha ex não deixa eu ver meu filho nos finais de semana",
+      "esperado": "guarda_filhos",
+      "previsto": "familia",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "63",
+      "relato": "Faz meses que não consigo ver meus filhos por causa dela",
+      "esperado": "guarda_filhos",
+      "previsto": "familia",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "64",
+      "relato": "Ele leva a criança e não devolve no dia combinado",
+      "esperado": "guarda_filhos",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "69",
+      "relato": "Não sei como proceder com os bens que meu pai deixou",
+      "esperado": "heranca_inventario",
+      "previsto": "familia",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "70",
+      "relato": "Minha mãe se foi e ninguém sabe o que fazer com a casa dela",
+      "esperado": "heranca_inventario",
+      "previsto": "familia",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "71",
+      "relato": "Tem um terreno de família parado desde que meu avô morreu",
+      "esperado": "heranca_inventario",
+      "previsto": "familia",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "74",
+      "relato": "Tenho uma situação complicada com meu ex-companheiro",
+      "esperado": "familia",
+      "previsto": "indefinida",
+      "dificuldade": "medio"
+    },
+    {
+      "id": "77",
+      "relato": "Meu auxílio-doença foi cancelado sem explicação",
+      "esperado": "inss",
+      "previsto": "indefinida",
+      "dificuldade": "facil"
+    },
+    {
+      "id": "81",
+      "relato": "Fiquei impossibilitada de trabalhar e o governo não me ajuda",
+      "esperado": "inss",
+      "previsto": "indefinida",
+      "dificuldade": "dificil"
+    },
+    {
+      "id": "82",
+      "relato": "Parei de receber o dinheiro que me ajudava todo mês",
+      "esperado": "inss",
+      "previsto": "heranca_inventario",
+      "dificuldade": "dificil"
+    }
+  ]
+}

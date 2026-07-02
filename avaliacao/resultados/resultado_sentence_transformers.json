@@ -1,0 +1,229 @@
+{
+  "classificador": "sentence-transformers",
+  "data": "2026-06-30T15:03:33.772973",
+  "total_casos": 88,
+  "total_erros": 16,
+  "relatorio": {
+    "bancario": {
+      "precision": 1.0,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.7272727272727273,
+      "support": 7.0
+    },
+    "cobranca_indevida": {
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1-score": 0.6666666666666666,
+      "support": 7.0
+    },
+    "consumidor_geral": {
+      "precision": 0.8571428571428571,
+      "recall": 0.8571428571428571,
+      "f1-score": 0.8571428571428571,
+      "support": 7.0
+    },
+    "divorcio_separacao": {
+      "precision": 1.0,
+      "recall": 0.8571428571428571,
+      "f1-score": 0.9230769230769231,
+      "support": 7.0
+    },
+    "familia": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1-score": 0.8571428571428571,
+      "support": 4.0
+    },
+    "guarda_filhos": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 7.0
+    },
+    "heranca_inventario": {
+      "precision": 1.0,
+      "recall": 0.8571428571428571,
+      "f1-score": 0.9230769230769231,
+      "support": 7.0
+    },
+    "indefinida": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 5.0
+    },
+    "inss": {
+      "precision": 1.0,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.7272727272727273,
+      "support": 7.0
+    },
+    "pensao_alimenticia": {
+      "precision": 0.75,
+      "recall": 0.8571428571428571,
+      "f1-score": 0.8,
+      "support": 7.0
+    },
+    "plano_saude": {
+      "precision": 0.8333333333333334,
+      "recall": 0.625,
+      "f1-score": 0.7142857142857143,
+      "support": 8.0
+    },
+    "produto_nao_entregue": {
+      "precision": 0.7142857142857143,
+      "recall": 0.7142857142857143,
+      "f1-score": 0.7142857142857143,
+      "support": 7.0
+    },
+    "trabalhista": {
+      "precision": 0.7272727272727273,
+      "recall": 1.0,
+      "f1-score": 0.8421052631578947,
+      "support": 8.0
+    },
+    "accuracy": 0.8181818181818182,
+    "macro avg": {
+      "precision": 0.8755411255411255,
+      "recall": 0.820054945054945,
+      "f1-score": 0.8271021825677696,
+      "support": 88.0
+    },
+    "weighted avg": {
+      "precision": 0.8663050964187328,
+      "recall": 0.8181818181818182,
+      "f1-score": 0.8210370570418416,
+      "support": 88.0
+    }
+  },
+  "erros": [
+    {
+      "id": "4",
+      "relato": "Pago plano de saude todo mes e quando preciso eles nao cobrem nada",
+      "esperado": "plano_saude",
+      "previsto": "cobranca_indevida",
+      "dificuldade": "medio",
+      "similaridade": 0.5988
+    },
+    {
+      "id": "5",
+      "relato": "Tentei marcar uma consulta pelo convenio e falaram que nao tem cobertura",
+      "esperado": "plano_saude",
+      "previsto": "produto_nao_entregue",
+      "dificuldade": "medio",
+      "similaridade": 0.6561
+    },
+    {
+      "id": "6",
+      "relato": "O plano só autorizou depois que eu ameacei processar",
+      "esperado": "plano_saude",
+      "previsto": "cobranca_indevida",
+      "dificuldade": "medio",
+      "similaridade": 0.4961
+    },
+    {
+      "id": "18",
+      "relato": "Produto nao chegou no prazo combinado pela loja",
+      "esperado": "produto_nao_entregue",
+      "previsto": "consumidor_geral",
+      "dificuldade": "facil",
+      "similaridade": 0.6265
+    },
+    {
+      "id": "21",
+      "relato": "Dei o dinheiro pro cara fazer um serviço em casa e ele nunca mais apareceu",
+      "esperado": "produto_nao_entregue",
+      "previsto": "trabalhista",
+      "dificuldade": "dificil",
+      "similaridade": 0.6584
+    },
+    {
+      "id": "29",
+      "relato": "A empresa não cumpre o que prometeu e ninguém me ajuda",
+      "esperado": "consumidor_geral",
+      "previsto": "cobranca_indevida",
+      "dificuldade": "dificil",
+      "similaridade": 0.6487
+    },
+    {
+      "id": "39",
+      "relato": "Fui vitima de fraude no meu cartao de credito",
+      "esperado": "bancario",
+      "previsto": "cobranca_indevida",
+      "dificuldade": "facil",
+      "similaridade": 0.6808
+    },
+    {
+      "id": "41",
+      "relato": "Apareceu um desconto no meu salario que eu nunca autorizei",
+      "esperado": "bancario",
+      "previsto": "cobranca_indevida",
+      "dificuldade": "medio",
+      "similaridade": 0.6856
+    },
+    {
+      "id": "42",
+      "relato": "Alguem usou meus dados e fez um pix que eu nao reconheço",
+      "esperado": "bancario",
+      "previsto": "cobranca_indevida",
+      "dificuldade": "dificil",
+      "similaridade": 0.4822
+    },
+    {
+      "id": "48",
+      "relato": "O juiz já definiu o valor mas ele não deposita",
+      "esperado": "pensao_alimenticia",
+      "previsto": "cobranca_indevida",
+      "dificuldade": "medio",
+      "similaridade": 0.4274
+    },
+    {
+      "id": "54",
+      "relato": "Nao moramos mais juntos faz um ano mas nunca separamos no papel",
+      "esperado": "divorcio_separacao",
+      "previsto": "pensao_alimenticia",
+      "dificuldade": "medio",
+      "similaridade": 0.3876
+    },
+    {
+      "id": "69",
+      "relato": "Não sei como proceder com os bens que meu pai deixou",
+      "esperado": "heranca_inventario",
+      "previsto": "pensao_alimenticia",
+      "dificuldade": "medio",
+      "similaridade": 0.6477
+    },
+    {
+      "id": "74",
+      "relato": "Tenho uma situação complicada com meu ex-companheiro",
+      "esperado": "familia",
+      "previsto": "trabalhista",
+      "dificuldade": "medio",
+      "similaridade": 0.5468
+    },
+    {
+      "id": "78",
+      "relato": "Preciso entrar com pedido de BPC/LOAS",
+      "esperado": "inss",
+      "previsto": "plano_saude",
+      "dificuldade": "facil",
+      "similaridade": 0.4936
+    },
+    {
+      "id": "79",
+      "relato": "Fiz a pericia do INSS e ainda nao saiu resultado",
+      "esperado": "inss",
+      "previsto": "produto_nao_entregue",
+      "dificuldade": "medio",
+      "similaridade": 0.641
+    },
+    {
+      "id": "81",
+      "relato": "Fiquei impossibilitada de trabalhar e o governo não me ajuda",
+      "esperado": "inss",
+      "previsto": "trabalhista",
+      "dificuldade": "dificil",
+      "similaridade": 0.6237
+    }
+  ]
+}
