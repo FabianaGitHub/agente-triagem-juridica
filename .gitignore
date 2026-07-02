@@ -1,0 +1,17 @@
+# Banco de dados (cada ambiente tem o seu)
+banco/triagem_juridica.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ambiente virtual
+venv/
+.env
+
+# PDFs gerados
+relatorios/pdfs_gerados/*.pdf
+
+# Anexos de casos
+dados/anexos_casos/
