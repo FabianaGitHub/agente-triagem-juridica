@@ -898,6 +898,16 @@ MEU_INSS_INFO = (
     "Central de atendimento: *135* (gratuito)"
 )
 
+BC_INFO = (
+    "🏦 *Banco Central do Brasil*\n"
+    "Canal oficial para reclamações contra bancos e instituições financeiras.\n\n"
+    "📞 *145* (gratuito, segunda a sexta, das 8h às 20h)\n"
+    "🌐 Registre online: *registrato.bcb.gov.br*\n"
+    "🌐 Consulte reclamações: *www.bcb.gov.br/reclamacoes*\n\n"
+    "_O Banco Central regula todas as instituições financeiras e pode aplicar "
+    "sanções em caso de irregularidades comprovadas._"
+)
+
 
 # Mantido para compatibilidade com a interface desktop
 def obter_orientacao_legal(area):

@@ -7,7 +7,7 @@ from flask import (Flask, request, session, redirect,
 from twilio.twiml.messaging_response import MessagingResponse
 from ia.motor_decisao import MotorDecisaoJuridica as MotorDecisao
 from ia.base_conhecimento import (
-    obter_perguntas, CEJUSC_INFO, PROCON_INFO, JEC_INFO, ANS_INFO, MEU_INSS_INFO
+    obter_perguntas, CEJUSC_INFO, PROCON_INFO, JEC_INFO, ANS_INFO, MEU_INSS_INFO, BC_INFO
 )
 from banco.banco_dados import (salvar_caso, criar_banco, gerar_id_sequencial,
                                registrar_consentimento, verificar_consentimento,
@@ -631,6 +631,17 @@ def obter_opcoes(area, sub_area, respostas):
             ["advogado", "meu_inss", "sem_atendimento"]
         )
 
+    if area == "Direito Bancário":
+        return (
+            "De acordo com o que você me disse, essas são suas opções:\n\n"
+            "1️⃣ Encaminhar para advogado parceiro\n"
+            "2️⃣ Registrar reclamação no Banco Central\n"
+            "3️⃣ Informações do CEJUSC\n"
+            "4️⃣ Não preciso de atendimento agora\n\n"
+            "_Responda com 1, 2, 3 ou 4._",
+            ["advogado", "banco_central", "cejusc", "sem_atendimento"]
+        )
+
     if area == "Indefinida":
         return _opcoes_indefinida(), ["advogado", "procon", "cejusc", "jec"]
 
@@ -727,6 +738,9 @@ def processar_escolha(mensagem, numero, sessao):
 
     if opcao == "ans":
         return f"✅ *Como registrar reclamação na ANS:*\n\n{ANS_INFO}" + protocolo_txt + DISCLAIMER
+
+    if opcao == "banco_central":
+        return f"✅ *Como registrar reclamação no Banco Central:*\n\n{BC_INFO}" + protocolo_txt + DISCLAIMER
 
     if opcao == "meu_inss":
         return f"✅ *Acesse o Meu INSS:*\n\n{MEU_INSS_INFO}" + protocolo_txt + DISCLAIMER
