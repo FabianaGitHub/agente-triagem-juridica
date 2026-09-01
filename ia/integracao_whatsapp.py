@@ -292,7 +292,7 @@ def processar_relato(mensagem, numero):
             "pode escrever com suas próprias palavras, sem preocupação com termos jurídicos."
         )
 
-    if msg in _AGRADECIMENTOS:
+    if msg in _AGRADECIMENTOS or any(ag in msg for ag in _AGRADECIMENTOS):
         return (
             "Fico feliz em ter ajudado! 😊\n\n"
             "Se precisar de mais orientações no futuro, é só me enviar uma mensagem descrevendo sua situação.\n\n"
