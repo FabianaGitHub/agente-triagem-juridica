@@ -63,7 +63,7 @@ def _extensao_permitida(filename):
 
 # ── Evolution API ─────────────────────────────────────────────────────────────
 _EVO_URL      = os.environ.get('EVOLUTION_API_URL',      'http://localhost:8080')
-_EVO_KEY      = os.environ.get('EVOLUTION_API_KEY',      'acessus2026')
+_EVO_KEY      = os.environ.get('EVOLUTION_API_KEY',      '')
 _EVO_INSTANCE = os.environ.get('EVOLUTION_INSTANCE',     'acessus')
 
 def _normalizar_numero(raw):
