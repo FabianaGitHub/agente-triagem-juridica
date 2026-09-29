@@ -1,10 +1,12 @@
+import base64
 import os
+import requests as _http
 from datetime import date, datetime
 from functools import wraps
-from urllib.parse import quote_plus, unquote_plus
+from urllib.parse import quote_plus
+from werkzeug.utils import secure_filename
 from flask import (Flask, request, session, redirect,
-                   url_for, render_template, send_file)
-from twilio.twiml.messaging_response import MessagingResponse
+                   url_for, render_template, send_file, send_from_directory)
 from ia.motor_decisao import MotorDecisaoJuridica as MotorDecisao
 from ia.base_conhecimento import (
     obter_perguntas, CEJUSC_INFO, PROCON_INFO, JEC_INFO, ANS_INFO, MEU_INSS_INFO, BC_INFO
@@ -18,7 +20,9 @@ from banco.banco_dados import (salvar_caso, criar_banco, gerar_id_sequencial,
                                buscar_conversa_por_numero,
                                registrar_sugestao, listar_sugestoes_pendentes,
                                listar_keywords_aprovadas, aprovar_sugestao,
-                               ignorar_sugestao)
+                               ignorar_sugestao,
+                               atualizar_caso, deletar_caso, adicionar_upload_caso,
+                               buscar_caso_por_id)
 
 AREAS_JURIDICAS = [
     'Direito do Consumidor',
@@ -44,6 +48,86 @@ motor = MotorDecisao()
 criar_banco()
 
 ADVOGADOS_SENHA = os.environ.get('ADVOGADOS_SENHA', 'acessus2026')
+
+# ── Diretórios de mídia ───────────────────────────────────────────────────────
+_BASE_DIR    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_AUDIO_DIR   = os.path.join(_BASE_DIR, 'audios')
+_UPLOAD_DIR  = os.path.join(_BASE_DIR, 'uploads')
+os.makedirs(_AUDIO_DIR, exist_ok=True)
+os.makedirs(_UPLOAD_DIR, exist_ok=True)
+
+_EXTENSOES_PERMITIDAS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'doc', 'docx'}
+
+def _extensao_permitida(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in _EXTENSOES_PERMITIDAS
+
+# ── Evolution API ─────────────────────────────────────────────────────────────
+_EVO_URL      = os.environ.get('EVOLUTION_API_URL',      'http://localhost:8080')
+_EVO_KEY      = os.environ.get('EVOLUTION_API_KEY',      'acessus2026')
+_EVO_INSTANCE = os.environ.get('EVOLUTION_INSTANCE',     'acessus')
+
+def _normalizar_numero(raw):
+    """Extrai apenas os dígitos do número (ex: '5519999@s.whatsapp.net' → '5519999')."""
+    return raw.replace('@s.whatsapp.net', '').replace('@c.us', '').replace('+', '').strip()
+
+def _enviar_mensagem(numero, texto):
+    """Envia mensagem de texto via Evolution API."""
+    try:
+        _http.post(
+            f"{_EVO_URL}/message/sendText/{_EVO_INSTANCE}",
+            json={"number": _normalizar_numero(numero), "text": texto},
+            headers={"apikey": _EVO_KEY, "Content-Type": "application/json"},
+            timeout=10,
+        )
+    except Exception as e:
+        print(f"[Evolution API] Erro ao enviar para {numero}: {e}")
+
+
+def _baixar_audio_evo(msg_obj, numero):
+    """Baixa áudio via Evolution API e salva em disco. Retorna (caminho_abs, caminho_rel) ou (None, None)."""
+    try:
+        r = _http.post(
+            f"{_EVO_URL}/chat/getBase64FromMediaMessage/{_EVO_INSTANCE}",
+            json={"message": msg_obj},
+            headers={"apikey": _EVO_KEY},
+            timeout=30,
+        )
+        if r.status_code != 200:
+            return None, None
+        dados = r.json()
+        b64 = dados.get("base64") or dados.get("data", {}).get("base64", "")
+        if not b64:
+            return None, None
+
+        numero_limpo = _normalizar_numero(numero)
+        pasta_abs = os.path.join(_AUDIO_DIR, numero_limpo)
+        os.makedirs(pasta_abs, exist_ok=True)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        nome_arquivo = f"{timestamp}.ogg"
+        caminho_abs = os.path.join(pasta_abs, nome_arquivo)
+        with open(caminho_abs, 'wb') as f:
+            f.write(base64.b64decode(b64))
+        caminho_rel = os.path.join(numero_limpo, nome_arquivo)
+        return caminho_abs, caminho_rel
+    except Exception as e:
+        print(f"[Áudio] Erro ao baixar: {e}")
+        return None, None
+
+
+_whisper_model = None
+
+def _transcrever_audio(caminho):
+    """Transcreve áudio com faster-whisper tiny. Retorna texto ou None."""
+    global _whisper_model
+    try:
+        if _whisper_model is None:
+            from faster_whisper import WhisperModel
+            _whisper_model = WhisperModel("tiny", device="cpu", compute_type="int8")
+        segments, _ = _whisper_model.transcribe(caminho, language="pt")
+        return " ".join(s.text.strip() for s in segments).strip() or None
+    except Exception as e:
+        print(f"[Áudio] Erro na transcrição: {e}")
+        return None
 
 # ── Sessões e consentimentos persistidos no banco ────────────────────────────
 # Substituem os dicts/sets em memória — sobrevivem a reinícios do servidor.
@@ -204,66 +288,106 @@ def processar_consentimento(mensagem, numero, sessao):
         )
 
 
-# ── Webhook WhatsApp ──────────────────────────────────────────────────────────
+# ── Webhook WhatsApp (Evolution API) ─────────────────────────────────────────
 
 @app.route("/whatsapp", methods=['POST'])
 def whatsapp_webhook():
-    mensagem   = unquote_plus(request.values.get('Body', '')).strip()
-    numero     = request.values.get('From', '')
-    nome_wa    = unquote_plus(request.values.get('ProfileName', '')).strip()
+    dados = request.get_json(silent=True) or {}
 
-    resp   = MessagingResponse()
-    sessao = _get_sessao(numero)
+    # Evolution API envia o evento dentro de dados["data"]["message"]
+    evento = dados.get("data", {})
+    chave  = evento.get("key", {})
+
+    # Ignorar mensagens enviadas pelo próprio bot
+    if chave.get("fromMe"):
+        return '', 200
+
+    numero_raw = chave.get("remoteJid", "")   # ex: 5519...@s.whatsapp.net
+    numero_db  = _normalizar_numero(numero_raw)  # apenas dígitos para o BD
+    nome_wa = evento.get("pushName", "").strip()
+
+    # Extrair texto da mensagem (texto simples ou estendido)
+    msg_obj  = evento.get("message", {})
+    mensagem = (
+        msg_obj.get("conversation")
+        or msg_obj.get("extendedTextMessage", {}).get("text")
+        or ""
+    ).strip()
+
+    # Mensagem de áudio: baixar, transcrever, registrar e avisar o usuário
+    if not mensagem and "audioMessage" in msg_obj:
+        _, caminho_rel = _baixar_audio_evo(msg_obj, numero_raw)
+        transcricao = _transcrever_audio(
+            os.path.join(_AUDIO_DIR, caminho_rel)
+        ) if caminho_rel else None
+
+        aviso = (
+            "Recebi seu áudio! 🎧\n\n"
+            "Para melhor atendimento, por favor escreva sua situação jurídica em texto também. 📝\n\n"
+            + (f"_Transcrição detectada: \"{transcricao}\"_" if transcricao else
+               "_Não consegui transcrever automaticamente._")
+        )
+        _enviar_mensagem(numero_raw, aviso)
+        registrar_mensagem(numero_db, 'entrada', '[áudio]',
+                           audio_path=caminho_rel, transcricao=transcricao)
+        return '', 200
+
+    # Ignorar eventos sem texto (stickers, figurinhas, etc.)
+    if not mensagem:
+        return '', 200
+
+    sessao = _get_sessao(numero_db)
     estado = sessao.get("estado", "novo")
 
     # Atualiza nome do WhatsApp na sessão se disponível
     if nome_wa and sessao.get('nome_whatsapp') != nome_wa:
         sessao['nome_whatsapp'] = nome_wa
         if estado != "novo":
-            _set_sessao(numero, sessao)
+            _set_sessao(numero_db, sessao)
 
     # Comando REINICIAR — só disponível em MODO_TESTE
     if MODO_TESTE and mensagem.strip().upper() == "REINICIAR":
-        _del_sessao(numero)
-        revogar_consentimento(numero)
-        if numero in historico:
-            del historico[numero]
-        resp.message("🔄 Sessão reiniciada. Pode começar uma nova conversa!")
-        return str(resp)
+        _del_sessao(numero_db)
+        revogar_consentimento(numero_db)
+        if numero_db in historico:
+            del historico[numero_db]
+        _enviar_mensagem(numero_raw, "🔄 Sessão reiniciada. Pode começar uma nova conversa!")
+        return '', 200
 
     # Cancelar/Sair reseta a sessão em qualquer estado
     _CANCELAR = {"cancelar", "sair", "cancel", "parar", "pare", "encerrar", "encerramento", "voltar"}
     if mensagem.strip().lower() in _CANCELAR:
-        _del_sessao(numero)
-        resp.message(
+        _del_sessao(numero_db)
+        _enviar_mensagem(
+            numero_raw,
             "Tudo bem! Sua sessão foi encerrada.\n\n"
             "Quando quiser, é só me enviar uma nova mensagem descrevendo sua situação jurídica. 😊"
         )
-        registrar_mensagem(numero, 'entrada', mensagem)
-        registrar_mensagem(numero, 'saida', "Sessão encerrada pelo usuário.")
-        return str(resp)
+        registrar_mensagem(numero_db, 'entrada', mensagem)
+        registrar_mensagem(numero_db, 'saida', "Sessão encerrada pelo usuário.")
+        return '', 200
 
     if estado == "aguardando_consentimento":
-        resposta = processar_consentimento(mensagem, numero, sessao)
+        resposta = processar_consentimento(mensagem, numero_db, sessao)
     elif estado == "aguardando_esclarecimento":
-        resposta = processar_esclarecimento(mensagem, numero, sessao)
+        resposta = processar_esclarecimento(mensagem, numero_db, sessao)
     elif estado == "fazendo_perguntas":
-        resposta = processar_resposta_pergunta(mensagem, numero, sessao)
+        resposta = processar_resposta_pergunta(mensagem, numero_db, sessao)
     elif estado == "aguardando_escolha":
-        resposta = processar_escolha(mensagem, numero, sessao)
-    elif verificar_consentimento(numero):
-        resposta = processar_relato(mensagem, numero)
+        resposta = processar_escolha(mensagem, numero_db, sessao)
+    elif verificar_consentimento(numero_db):
+        resposta = processar_relato(mensagem, numero_db)
     else:
         sessao_nova = {"estado": "aguardando_consentimento"}
         if nome_wa:
             sessao_nova['nome_whatsapp'] = nome_wa
-        _set_sessao(numero, sessao_nova)
+        _set_sessao(numero_db, sessao_nova)
         resposta = _montar_termo(nome_wa)
 
-    registrar_mensagem(numero, 'entrada', mensagem)
-    registrar_mensagem(numero, 'saida', resposta)
-    resp.message(resposta)
-    return str(resp)
+    registrar_mensagem(numero_db, 'entrada', mensagem)
+    registrar_mensagem(numero_db, 'saida', resposta)
+    _enviar_mensagem(numero_raw, resposta)
+    return '', 200
 
 
 # ── Processamento do relato ───────────────────────────────────────────────────
@@ -830,17 +954,9 @@ def dashboard():
                            prio_filtro=prio_filtro)
 
 
-@app.route('/advogados/caso/<caso_id>')
-@requer_login
-def ver_caso(caso_id):
-    from banco.banco_dados import buscar_caso_por_id
-
-    dados = buscar_caso_por_id(caso_id)
-    if not dados:
-        return 'Caso não encontrado.', 404
-
-    id_caso, nome, email, whatsapp, relato, tipo, prio, anexos, data_cad = dados
-
+def _montar_caso_dict(dados):
+    """Converte tupla do BD em dicionário para templates."""
+    id_caso, nome, email, whatsapp, relato, tipo, prio, anexos, data_cad, notas = dados
     campos = []
     if relato and 'RELATO:' in relato:
         for linha in relato.split('\n'):
@@ -852,8 +968,7 @@ def ver_caso(caso_id):
                 campos.append((chave.strip().title().replace('_', ' '), valor.strip()))
     else:
         campos = [('Relato', relato or '')]
-
-    caso = {
+    return {
         'id':         id_caso,
         'nome':       nome or '—',
         'email':      email or '',
@@ -862,24 +977,83 @@ def ver_caso(caso_id):
         'prioridade': prio or '—',
         'data_fmt':   _formatar_data_web(data_cad),
         'campos':     campos,
+        'relato_raw': relato or '',
         'anexos':     [a.strip() for a in (anexos or '').split(',') if a.strip()],
+        'notas':      notas or '',
         'cor':        _COR_AREA.get(tipo, 'secondary'),
     }
 
-    return render_template('caso.html', caso=caso)
+
+@app.route('/advogados/caso/<caso_id>')
+@requer_login
+def ver_caso(caso_id):
+    dados = buscar_caso_por_id(caso_id)
+    if not dados:
+        return 'Caso não encontrado.', 404
+    return render_template('caso.html', caso=_montar_caso_dict(dados),
+                           areas=AREAS_JURIDICAS)
+
+
+@app.route('/advogados/caso/<caso_id>/editar', methods=['POST'])
+@requer_login
+def editar_caso(caso_id):
+    atualizar_caso(
+        caso_id,
+        nome_cliente=request.form.get('nome_cliente') or None,
+        tipo_caso=request.form.get('tipo_caso') or None,
+        prioridade=request.form.get('prioridade') or None,
+        notas=request.form.get('notas'),
+    )
+    return redirect(f'/advogados/caso/{caso_id}')
+
+
+@app.route('/advogados/caso/<caso_id>/deletar', methods=['POST'])
+@requer_login
+def deletar_caso_route(caso_id):
+    deletar_caso(caso_id)
+    return redirect('/advogados')
+
+
+@app.route('/advogados/caso/<caso_id>/upload', methods=['POST'])
+@requer_login
+def upload_caso(caso_id):
+    arquivo = request.files.get('arquivo')
+    if not arquivo or not arquivo.filename:
+        return redirect(f'/advogados/caso/{caso_id}')
+    if not _extensao_permitida(arquivo.filename):
+        return redirect(f'/advogados/caso/{caso_id}')
+    pasta = os.path.join(_UPLOAD_DIR, 'casos', caso_id)
+    os.makedirs(pasta, exist_ok=True)
+    nome_seguro = secure_filename(arquivo.filename)
+    arquivo.save(os.path.join(pasta, nome_seguro))
+    adicionar_upload_caso(caso_id, nome_seguro)
+    return redirect(f'/advogados/caso/{caso_id}')
+
+
+@app.route('/advogados/uploads/<caso_id>/<filename>')
+@requer_login
+def servir_upload(caso_id, filename):
+    pasta = os.path.join(_UPLOAD_DIR, 'casos', caso_id)
+    return send_from_directory(pasta, filename)
+
+
+@app.route('/advogados/audio/<path:caminho>')
+@requer_login
+def servir_audio(caminho):
+    return send_from_directory(_AUDIO_DIR, caminho)
 
 
 @app.route('/advogados/pdf/<caso_id>')
 @requer_login
 def baixar_pdf(caso_id):
-    from banco.banco_dados import buscar_caso_por_id
     from relatorios.gerador_pdf import gerar_pdf_caso
 
     dados = buscar_caso_por_id(caso_id)
     if not dados:
         return 'Caso não encontrado.', 404
 
-    caminho = gerar_pdf_caso(dados)
+    # gerador_pdf espera 9 colunas (sem notas); passa apenas as primeiras 9
+    caminho = gerar_pdf_caso(dados[:9])
     return send_file(
         caminho,
         as_attachment=True,
@@ -978,14 +1152,16 @@ def conversas_lista():
 @app.route('/advogados/conversas/<path:numero>')
 @requer_login
 def conversa_detalhe(numero):
-    whatsapp_key = numero if numero.startswith('whatsapp:') else f'whatsapp:{numero}'
-    mensagens = buscar_conversa_por_numero(whatsapp_key)
+    # Tenta com o número como está (novo formato: só dígitos)
+    mensagens = buscar_conversa_por_numero(numero)
+    if not mensagens:
+        # Compatibilidade com formato antigo Twilio (whatsapp:+551999...)
+        mensagens = buscar_conversa_por_numero(f'whatsapp:{numero}')
     for m in mensagens:
         m['data_fmt'] = _formatar_data_web(m['data_hora'])
-    numero_limpo = whatsapp_key.replace('whatsapp:', '')
     return render_template('conversa_detalhe.html',
                            mensagens=mensagens,
-                           numero=numero_limpo)
+                           numero=numero)
 
 
 # ── Sugestões de keywords ─────────────────────────────────────────────────────

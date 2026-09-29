@@ -1,6 +1,7 @@
 flask
-twilio
+requests
 fpdf2
 gunicorn
 psycopg2-binary
 sendgrid
+faster-whisper

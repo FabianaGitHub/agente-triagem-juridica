@@ -175,6 +175,20 @@ def criar_banco():
     """)
 
     conn.commit()
+
+    # Migrações: colunas adicionadas em versões posteriores
+    if not USANDO_POSTGRES:
+        for _sql in [
+            "ALTER TABLE mensagens ADD COLUMN audio_path TEXT",
+            "ALTER TABLE mensagens ADD COLUMN transcricao TEXT",
+            "ALTER TABLE CASOS ADD COLUMN notas TEXT",
+        ]:
+            try:
+                cursor.execute(_sql)
+                conn.commit()
+            except Exception:
+                pass  # coluna já existe
+
     conn.close()
     print("[Banco] Inicializado com sucesso.")
 
@@ -289,19 +303,73 @@ def buscar_caso_por_id(caso_id):
     if USANDO_POSTGRES:
         cursor.execute("""
             SELECT id, nome_cliente, email, whatsapp, relato,
-                   tipo_caso, prioridade, anexos, data_cadastro
+                   tipo_caso, prioridade, anexos, data_cadastro, notas
             FROM casos WHERE id = %s
         """, (caso_id,))
     else:
         cursor.execute("""
             SELECT id, nome_cliente, email, whatsapp, relato,
-                   tipo_caso, prioridade, anexos, data_cadastro
+                   tipo_caso, prioridade, anexos, data_cadastro, notas
             FROM CASOS WHERE id = ?
         """, (caso_id,))
 
     caso = cursor.fetchone()
     conn.close()
     return caso
+
+
+def atualizar_caso(caso_id, nome_cliente=None, tipo_caso=None, prioridade=None,
+                   notas=None, relato=None):
+    """Atualiza campos editáveis de um caso existente."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    tabela = "casos" if USANDO_POSTGRES else "CASOS"
+    ph = "%s" if USANDO_POSTGRES else "?"
+
+    campos_sql, valores = [], []
+    for col, val in [("nome_cliente", nome_cliente), ("tipo_caso", tipo_caso),
+                     ("prioridade", prioridade), ("notas", notas), ("relato", relato)]:
+        if val is not None:
+            campos_sql.append(f"{col} = {ph}")
+            valores.append(val)
+
+    if not campos_sql:
+        conn.close()
+        return
+
+    valores.append(caso_id)
+    cursor.execute(
+        f"UPDATE {tabela} SET {', '.join(campos_sql)} WHERE id = {ph}",
+        valores
+    )
+    conn.commit()
+    conn.close()
+
+
+def deletar_caso(caso_id):
+    """Remove permanentemente um caso do banco."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    tabela = "casos" if USANDO_POSTGRES else "CASOS"
+    ph = "%s" if USANDO_POSTGRES else "?"
+    cursor.execute(f"DELETE FROM {tabela} WHERE id = {ph}", (caso_id,))
+    conn.commit()
+    conn.close()
+
+
+def adicionar_upload_caso(caso_id, filename):
+    """Appenda o nome do arquivo na coluna 'anexos' do caso."""
+    conn = _conectar()
+    cursor = conn.cursor()
+    tabela = "casos" if USANDO_POSTGRES else "CASOS"
+    ph = "%s" if USANDO_POSTGRES else "?"
+    cursor.execute(f"SELECT anexos FROM {tabela} WHERE id = {ph}", (caso_id,))
+    row = cursor.fetchone()
+    atual = (row[0] or "").strip() if row else ""
+    novo = f"{atual},{filename}".strip(",") if atual else filename
+    cursor.execute(f"UPDATE {tabela} SET anexos = {ph} WHERE id = {ph}", (novo, caso_id))
+    conn.commit()
+    conn.close()
 
 
 # ── Consentimentos ────────────────────────────────────────────────────────────
@@ -465,19 +533,19 @@ def buscar_advogado_por_area(area):
 
 # ── Mensagens (monitoramento de conversas) ───────────────────────────────────
 
-def registrar_mensagem(whatsapp, direcao, texto):
+def registrar_mensagem(whatsapp, direcao, texto, audio_path=None, transcricao=None):
     """Grava uma mensagem recebida ('entrada') ou enviada ('saida') pelo bot."""
     conn = _conectar()
     cursor = conn.cursor()
     if USANDO_POSTGRES:
         cursor.execute(
-            "INSERT INTO mensagens (whatsapp, direcao, texto) VALUES (%s, %s, %s)",
-            (whatsapp, direcao, texto)
+            "INSERT INTO mensagens (whatsapp, direcao, texto, audio_path, transcricao) VALUES (%s,%s,%s,%s,%s)",
+            (whatsapp, direcao, texto, audio_path, transcricao)
         )
     else:
         cursor.execute(
-            "INSERT INTO mensagens (whatsapp, direcao, texto) VALUES (?, ?, ?)",
-            (whatsapp, direcao, texto)
+            "INSERT INTO mensagens (whatsapp, direcao, texto, audio_path, transcricao) VALUES (?,?,?,?,?)",
+            (whatsapp, direcao, texto, audio_path, transcricao)
         )
     conn.commit()
     conn.close()
@@ -504,17 +572,21 @@ def buscar_conversa_por_numero(whatsapp):
     cursor = conn.cursor()
     if USANDO_POSTGRES:
         cursor.execute(
-            "SELECT direcao, texto, data_hora FROM mensagens WHERE whatsapp = %s ORDER BY data_hora ASC",
+            "SELECT direcao, texto, data_hora, audio_path, transcricao FROM mensagens WHERE whatsapp = %s ORDER BY data_hora ASC",
             (whatsapp,)
         )
     else:
         cursor.execute(
-            "SELECT direcao, texto, data_hora FROM mensagens WHERE whatsapp = ? ORDER BY data_hora ASC",
+            "SELECT direcao, texto, data_hora, audio_path, transcricao FROM mensagens WHERE whatsapp = ? ORDER BY data_hora ASC",
             (whatsapp,)
         )
     rows = cursor.fetchall()
     conn.close()
-    return [{'direcao': r[0], 'texto': r[1], 'data_hora': r[2]} for r in rows]
+    return [
+        {'direcao': r[0], 'texto': r[1], 'data_hora': r[2],
+         'audio_path': r[3], 'transcricao': r[4]}
+        for r in rows
+    ]
 
 
 # ── Sugestões de keywords (aprendizado supervisionado) ───────────────────────

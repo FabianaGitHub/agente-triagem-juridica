@@ -102,8 +102,110 @@
   </div>
   {% endif %}
 
+  <!-- Notas do advogado -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header py-2 secao-header d-flex justify-content-between align-items-center">
+      <h6 class="mb-0"><i class="bi bi-pencil-square me-1"></i>Notas Internas</h6>
+      <button class="btn btn-sm btn-outline-secondary" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseNotas">
+        <i class="bi bi-pencil me-1"></i>Editar
+      </button>
+    </div>
+    <div class="card-body">
+      {% if caso.notas %}
+      <p class="mb-2" style="white-space:pre-wrap; font-size:.9rem;">{{ caso.notas }}</p>
+      {% else %}
+      <p class="text-muted small mb-2">Nenhuma nota registrada.</p>
+      {% endif %}
+      <!-- Form inline de notas -->
+      <div class="collapse" id="collapseNotas">
+        <form method="POST" action="/advogados/caso/{{ caso.id }}/editar">
+          <input type="hidden" name="nome_cliente" value="{{ caso.nome }}">
+          <input type="hidden" name="tipo_caso" value="{{ caso.tipo }}">
+          <input type="hidden" name="prioridade" value="{{ caso.prioridade }}">
+          <textarea name="notas" class="form-control form-control-sm mb-2" rows="4"
+                    placeholder="Adicione notas internas...">{{ caso.notas }}</textarea>
+          <button type="submit" class="btn btn-sm btn-primary">Salvar notas</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arquivos / Upload -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header py-2 secao-header">
+      <h6 class="mb-0"><i class="bi bi-paperclip me-1"></i>Arquivos e Imagens</h6>
+    </div>
+    <div class="card-body">
+      {% if caso.anexos %}
+      <div class="mb-3">
+        {% for arq in caso.anexos %}
+        <div class="small py-1">
+          <i class="bi bi-file-earmark me-1 text-muted"></i>
+          <a href="/advogados/uploads/{{ caso.id }}/{{ arq }}" target="_blank">{{ arq }}</a>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted small mb-3">Nenhum arquivo anexado.</p>
+      {% endif %}
+      <!-- Upload -->
+      <form method="POST" action="/advogados/caso/{{ caso.id }}/upload"
+            enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+        <input type="file" name="arquivo" class="form-control form-control-sm"
+               accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.doc,.docx" style="max-width:320px;">
+        <button type="submit" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-upload me-1"></i>Enviar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Editar campos principais -->
+  <div class="card shadow-sm mb-4 border-warning">
+    <div class="card-header py-2 d-flex justify-content-between align-items-center"
+         style="background:#fffbe6;">
+      <h6 class="mb-0 text-warning-emphasis"><i class="bi bi-gear me-1"></i>Editar Caso</h6>
+      <button class="btn btn-sm btn-outline-warning" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseEditar">
+        Abrir
+      </button>
+    </div>
+    <div class="collapse" id="collapseEditar">
+      <div class="card-body">
+        <form method="POST" action="/advogados/caso/{{ caso.id }}/editar">
+          <input type="hidden" name="notas" value="{{ caso.notas }}">
+          <div class="row g-2 mb-2">
+            <div class="col-sm-6">
+              <label class="form-label small">Nome do Solicitante</label>
+              <input type="text" name="nome_cliente" class="form-control form-control-sm"
+                     value="{{ caso.nome }}">
+            </div>
+            <div class="col-sm-3">
+              <label class="form-label small">Área Jurídica</label>
+              <select name="tipo_caso" class="form-select form-select-sm">
+                {% for area in areas %}
+                <option value="{{ area }}" {% if area == caso.tipo %}selected{% endif %}>{{ area }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-3">
+              <label class="form-label small">Prioridade</label>
+              <select name="prioridade" class="form-select form-select-sm">
+                {% for p in ['P1 - Urgente', 'P2 - Alta', 'P3 - Média', 'P4 - Baixa'] %}
+                <option value="{{ p }}" {% if p == caso.prioridade %}selected{% endif %}>{{ p }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-sm btn-warning fw-bold">Salvar alterações</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Ações -->
-  <div class="d-flex gap-3">
+  <div class="d-flex gap-3 flex-wrap">
     <a href="/advogados/pdf/{{ caso.id }}"
        class="btn text-white fw-bold" style="background-color:#1a3c5e;">
       <i class="bi bi-file-earmark-pdf me-1"></i>Baixar PDF
@@ -111,6 +213,13 @@
     <a href="/advogados" class="btn btn-outline-secondary">
       <i class="bi bi-arrow-left me-1"></i>Voltar para lista
     </a>
+    <!-- Excluir -->
+    <form method="POST" action="/advogados/caso/{{ caso.id }}/deletar"
+          onsubmit="return confirm('Excluir permanentemente o protocolo {{ caso.id }}? Esta ação não pode ser desfeita.')">
+      <button type="submit" class="btn btn-outline-danger">
+        <i class="bi bi-trash me-1"></i>Excluir caso
+      </button>
+    </form>
   </div>
 
 </div>
