@@ -831,7 +831,10 @@ def processar_escolha(mensagem, numero, sessao):
             from ia.notificacoes import enviar_email_advogado
             dados = buscar_caso_por_id(protocolo)
             if dados:
-                _, _, _, wa_cliente, relato_db, tipo_db, prio_db, _, _ = dados
+                wa_cliente = dados[3]
+                relato_db  = dados[4]
+                tipo_db    = dados[5]
+                prio_db    = dados[6]
                 adv = buscar_advogado_por_area(tipo_db or area)
                 enviar_email_advogado(
                     protocolo=protocolo,
