@@ -24,28 +24,44 @@
 
     <div class="secao-header mt-3">Filtros</div>
 
-    <div class="secao-header mt-2">Área Jurídica</div>
-    <a href="/advogados" class="filtro-link {% if not area_filtro %}ativo{% endif %}">
-      Todas as áreas
-    </a>
-    {% for area in areas %}
-    <a href="/advogados?area={{ area|urlencode }}"
-       class="filtro-link {% if area_filtro == area %}ativo{% endif %}">
-      {{ area }}
-    </a>
-    {% endfor %}
+    <!-- Área Jurídica (retrátil) -->
+    <button class="secao-header mt-2 w-100 text-start border-0 d-flex justify-content-between align-items-center"
+            type="button" data-bs-toggle="collapse" data-bs-target="#filtroArea"
+            style="cursor:pointer;">
+      Área Jurídica
+      <i class="bi bi-chevron-down small"></i>
+    </button>
+    <div class="collapse {% if area_filtro %}show{% endif %}" id="filtroArea">
+      <a href="/advogados" class="filtro-link {% if not area_filtro %}ativo{% endif %}">
+        Todas as áreas
+      </a>
+      {% for area in areas %}
+      <a href="/advogados?area={{ area|urlencode }}"
+         class="filtro-link {% if area_filtro == area %}ativo{% endif %}">
+        {{ area }}
+      </a>
+      {% endfor %}
+    </div>
 
-    <div class="secao-header mt-2">Prioridade</div>
-    <a href="/advogados{% if area_filtro %}?area={{ area_filtro|urlencode }}{% endif %}"
-       class="filtro-link {% if not prio_filtro %}ativo{% endif %}">
-      Todas
-    </a>
-    {% for p, label in [('Prioridade 1','Alta'),('Prioridade 2','Média'),('Prioridade 3','Normal')] %}
-    <a href="/advogados?prioridade={{ p|urlencode }}{% if area_filtro %}&area={{ area_filtro|urlencode }}{% endif %}"
-       class="filtro-link {% if prio_filtro == p %}ativo{% endif %}">
-      {{ p }} — {{ label }}
-    </a>
-    {% endfor %}
+    <!-- Prioridade (retrátil) -->
+    <button class="secao-header mt-2 w-100 text-start border-0 d-flex justify-content-between align-items-center"
+            type="button" data-bs-toggle="collapse" data-bs-target="#filtroPrio"
+            style="cursor:pointer;">
+      Prioridade
+      <i class="bi bi-chevron-down small"></i>
+    </button>
+    <div class="collapse {% if prio_filtro %}show{% endif %}" id="filtroPrio">
+      <a href="/advogados{% if area_filtro %}?area={{ area_filtro|urlencode }}{% endif %}"
+         class="filtro-link {% if not prio_filtro %}ativo{% endif %}">
+        Todas
+      </a>
+      {% for p, label in [('Prioridade 1','Alta'),('Prioridade 2','Média'),('Prioridade 3','Normal')] %}
+      <a href="/advogados?prioridade={{ p|urlencode }}{% if area_filtro %}&area={{ area_filtro|urlencode }}{% endif %}"
+         class="filtro-link {% if prio_filtro == p %}ativo{% endif %}">
+        {{ p }} — {{ label }}
+      </a>
+      {% endfor %}
+    </div>
   </div>
 
   <!-- ── Lista de casos ──────────────────────────────────────────── -->
