@@ -56,23 +56,28 @@ class PDFCaso(FPDF):
 
 # ── Funções auxiliares ────────────────────────────────────────────────────────
 
+def _safe(s):
+    """Remove caracteres fora do Latin-1 (ex: emojis, bullet •) para compatibilidade com Helvetica."""
+    return str(s or '').encode('latin-1', errors='replace').decode('latin-1')
+
+
 def _titulo_secao(pdf, texto):
     pdf.set_fill_color(*COR_SECAO)
     pdf.set_text_color(*COR_BRANCO)
     pdf.set_font('Helvetica', 'B', 10)
-    pdf.cell(0, 7, '  ' + texto, ln=True, fill=True)
+    pdf.cell(0, 7, '  ' + _safe(texto), ln=True, fill=True)
     pdf.set_text_color(*COR_TEXTO)
     pdf.ln(2)
 
 
 def _campo(pdf, label, valor, fundo=False):
-    valor = str(valor).strip() if valor else ''
-    if not valor or valor in ('None', '—'):
+    valor = _safe(valor).strip()
+    if not valor or valor in ('None', '-'):
         return
     pdf.set_fill_color(*(COR_FUNDO_ALT if fundo else COR_BRANCO))
     pdf.set_font('Helvetica', 'B', 8)
     pdf.set_text_color(*COR_LABEL)
-    pdf.cell(0, 5, label, ln=True, fill=True)
+    pdf.cell(0, 5, _safe(label), ln=True, fill=True)
     pdf.set_font('Helvetica', '', 9)
     pdf.set_text_color(*COR_TEXTO)
     pdf.multi_cell(0, 6, valor, fill=True)
@@ -142,15 +147,15 @@ def gerar_pdf_caso(dados):
     r, g, b = COR_PRIORIDADE.get(str(prioridade), COR_TEXTO)
     pdf.set_font('Helvetica', 'B', 11)
     pdf.set_text_color(*COR_CABECALHO)
-    pdf.cell(60, 7, str(id_caso))
+    pdf.cell(60, 7, _safe(id_caso))
 
     pdf.set_font('Helvetica', '', 10)
     pdf.set_text_color(*COR_TEXTO)
-    pdf.cell(70, 7, _formatar_data(data_cadastro))
+    pdf.cell(70, 7, _safe(_formatar_data(data_cadastro)))
 
     pdf.set_font('Helvetica', 'B', 10)
     pdf.set_text_color(r, g, b)
-    pdf.cell(0, 7, str(prioridade or '—'), ln=True)
+    pdf.cell(0, 7, _safe(prioridade or '-'), ln=True)
 
     pdf.ln(2)
     _campo(pdf, 'Área Jurídica', tipo_caso, fundo=True)
@@ -177,7 +182,7 @@ def gerar_pdf_caso(dados):
             if path:
                 pdf.set_font('Helvetica', '', 9)
                 pdf.set_text_color(*COR_TEXTO)
-                pdf.cell(0, 6, '  •  ' + os.path.basename(path), ln=True)
+                pdf.cell(0, 6, '  - ' + _safe(os.path.basename(path)), ln=True)
         pdf.ln(3)
 
     # ── Aviso legal ───────────────────────────────────────────────────────
