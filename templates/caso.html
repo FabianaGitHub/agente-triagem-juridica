@@ -196,8 +196,8 @@
             <div class="col-sm-3">
               <label class="form-label small">Prioridade</label>
               <select name="prioridade" class="form-select form-select-sm">
-                {% for p in ['P1 - Urgente', 'P2 - Alta', 'P3 - Média', 'P4 - Baixa'] %}
-                <option value="{{ p }}" {% if p == caso.prioridade %}selected{% endif %}>{{ p }}</option>
+                {% for val, label in [('Prioridade 1','P1 - Urgente'),('Prioridade 2','P2 - Alta'),('Prioridade 3','P3 - Média'),('Prioridade 4','P4 - Baixa')] %}
+                <option value="{{ val }}" {% if val == caso.prioridade %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </div>
