@@ -86,21 +86,21 @@
     </div>
   </div>
 
-  <!-- Anexos -->
-  {% if caso.anexos %}
-  <div class="card shadow-sm mb-4">
-    <div class="card-header py-2 secao-header">
-      <h6 class="mb-0"><i class="bi bi-paperclip me-1"></i>Anexos</h6>
+  <!-- Vídeo da cliente -->
+  <div class="card shadow-sm mb-4 {% if not caso.link_video %}border-0 bg-transparent{% endif %}">
+    {% if caso.link_video %}
+    <div class="card-header py-2 secao-header d-flex justify-content-between align-items-center">
+      <h6 class="mb-0"><i class="bi bi-camera-video me-1 text-danger"></i>Vídeo da Cliente</h6>
     </div>
     <div class="card-body">
-      {% for arq in caso.anexos %}
-      <div class="small py-1">
-        <i class="bi bi-file-earmark me-1 text-muted"></i>{{ arq }}
-      </div>
-      {% endfor %}
+      <a href="{{ caso.link_video }}" target="_blank" rel="noopener"
+         class="btn btn-danger fw-bold">
+        <i class="bi bi-play-circle me-2"></i>Abrir vídeo
+      </a>
+      <div class="mt-2 small text-muted text-break">{{ caso.link_video }}</div>
     </div>
+    {% endif %}
   </div>
-  {% endif %}
 
   <!-- Notas do advogado -->
   <div class="card shadow-sm mb-4">
@@ -196,6 +196,13 @@
                 <option value="{{ p }}" {% if p == caso.prioridade %}selected{% endif %}>{{ p }}</option>
                 {% endfor %}
               </select>
+            </div>
+          </div>
+          <div class="row g-2 mb-2 mt-1">
+            <div class="col-12">
+              <label class="form-label small">Link do Vídeo (opcional)</label>
+              <input type="url" name="link_video" class="form-control form-control-sm"
+                     placeholder="https://..." value="{{ caso.link_video }}">
             </div>
           </div>
           <button type="submit" class="btn btn-sm btn-warning fw-bold">Salvar alterações</button>

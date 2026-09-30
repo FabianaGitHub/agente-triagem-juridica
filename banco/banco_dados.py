@@ -182,6 +182,7 @@ def criar_banco():
             "ALTER TABLE mensagens ADD COLUMN audio_path TEXT",
             "ALTER TABLE mensagens ADD COLUMN transcricao TEXT",
             "ALTER TABLE CASOS ADD COLUMN notas TEXT",
+            "ALTER TABLE CASOS ADD COLUMN link_video TEXT",
         ]:
             try:
                 cursor.execute(_sql)
@@ -303,13 +304,13 @@ def buscar_caso_por_id(caso_id):
     if USANDO_POSTGRES:
         cursor.execute("""
             SELECT id, nome_cliente, email, whatsapp, relato,
-                   tipo_caso, prioridade, anexos, data_cadastro, notas
+                   tipo_caso, prioridade, anexos, data_cadastro, notas, link_video
             FROM casos WHERE id = %s
         """, (caso_id,))
     else:
         cursor.execute("""
             SELECT id, nome_cliente, email, whatsapp, relato,
-                   tipo_caso, prioridade, anexos, data_cadastro, notas
+                   tipo_caso, prioridade, anexos, data_cadastro, notas, link_video
             FROM CASOS WHERE id = ?
         """, (caso_id,))
 
@@ -319,7 +320,7 @@ def buscar_caso_por_id(caso_id):
 
 
 def atualizar_caso(caso_id, nome_cliente=None, tipo_caso=None, prioridade=None,
-                   notas=None, relato=None):
+                   notas=None, relato=None, link_video=None):
     """Atualiza campos editáveis de um caso existente."""
     conn = _conectar()
     cursor = conn.cursor()
@@ -328,7 +329,8 @@ def atualizar_caso(caso_id, nome_cliente=None, tipo_caso=None, prioridade=None,
 
     campos_sql, valores = [], []
     for col, val in [("nome_cliente", nome_cliente), ("tipo_caso", tipo_caso),
-                     ("prioridade", prioridade), ("notas", notas), ("relato", relato)]:
+                     ("prioridade", prioridade), ("notas", notas), ("relato", relato),
+                     ("link_video", link_video)]:
         if val is not None:
             campos_sql.append(f"{col} = {ph}")
             valores.append(val)

@@ -956,7 +956,7 @@ def dashboard():
 
 def _montar_caso_dict(dados):
     """Converte tupla do BD em dicionário para templates."""
-    id_caso, nome, email, whatsapp, relato, tipo, prio, anexos, data_cad, notas = dados
+    id_caso, nome, email, whatsapp, relato, tipo, prio, anexos, data_cad, notas, link_video = dados
     campos = []
     if relato and 'RELATO:' in relato:
         for linha in relato.split('\n'):
@@ -980,6 +980,7 @@ def _montar_caso_dict(dados):
         'relato_raw': relato or '',
         'anexos':     [a.strip() for a in (anexos or '').split(',') if a.strip()],
         'notas':      notas or '',
+        'link_video': link_video or '',
         'cor':        _COR_AREA.get(tipo, 'secondary'),
     }
 
@@ -1003,6 +1004,7 @@ def editar_caso(caso_id):
         tipo_caso=request.form.get('tipo_caso') or None,
         prioridade=request.form.get('prioridade') or None,
         notas=request.form.get('notas'),
+        link_video=request.form.get('link_video') or None,
     )
     return redirect(f'/advogados/caso/{caso_id}')
 
