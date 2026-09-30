@@ -10,11 +10,11 @@ from fpdf import FPDF
 from config import RELATORIOS_DIR
 
 # ── Paleta de cores (RGB) ─────────────────────────────────────────────────────
-COR_CABECALHO = (26, 60, 94)     # #1a3c5e  azul escuro
-COR_SECAO     = (41, 128, 185)   # #2980b9  azul médio
-COR_FUNDO_ALT = (240, 244, 248)  # #f0f4f8  cinza claro
-COR_TEXTO     = (50, 50, 50)
-COR_LABEL     = (110, 110, 110)
+COR_CABECALHO = (26, 60, 94)     # #1a3c5e  azul marinho (site)
+COR_SECAO     = (26, 60, 94)     # #1a3c5e  mesmo azul marinho do site
+COR_FUNDO_ALT = (232, 240, 248)  # azul claro suave
+COR_TEXTO     = (26, 60, 94)     # azul marinho em vez de preto
+COR_LABEL     = (100, 130, 160)  # azul acinzentado para labels
 COR_BRANCO    = (255, 255, 255)
 
 COR_PRIORIDADE = {
